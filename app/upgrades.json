@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Core",
+    "schemaVersion": "v0.01",
+    "maxLevel": 2,
+    "costStructure": [
+      {
+        "currencyNames": ["null"],
+        "currencyAmounts": [-1]
+      },
+      {
+        "currencyNames": ["Money"],
+        "currencyAmounts": [20]
+      },
+      {
+        "currencyNames": ["Money", "Eggs"],
+        "currencyAmounts": [1000, 10]
+      }
+    ],
+    "unlockStructure": [
+      {
+        "criteriaNames": ["null"],
+        "criteriaTypes": ["null"],
+        "criteriaAmounts": [-1]
+      },
+      {
+        "criteriaNames": ["Money"],
+        "criteriaTypes": ["MaxCurrency"],
+        "criteriaAmounts": [5]
+      },
+      {
+        "criteriaNames": ["Money", "Eggs"],
+        "criteriaTypes": ["MaxCurrency", "Item"],
+        "criteriaAmounts": [20, 1]
+      }
+    ]
+  }
+]

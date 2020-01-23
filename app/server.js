@@ -13,6 +13,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 const mTools = require('./mongooseTools.js');
+const jsonfile = require('jsonfile')
 
 //Helper function for logging primarily objects or large arrays
 function dataLog(data) {
@@ -128,25 +129,33 @@ function BlankUser(username, pass, schemaVersion) {
   this.currencyBags = [{
     name: "Money",
     amount: 0,
-    maxAmount: 10
+    maxAmount: 5
   }];
 }
 
 //todo: make into constructor
-const blankUpgrade = {
-  name: "placeholder",
-  schemaVersion: "v0.01",
-  maxLevel: -1,
-  costStructure: [{
-    currencyNames: ["placeholder"],
-    currencyAmounts: [-1]
-  }],
-  unlockStructure: [{ //each object corresponds to the level #, same as costStructure so unlockStructure[1] is the unlock reqs for level 1
-    criteriaNames: ["placeholder"], //the arrays of each here correspond, so cNames[1], cTypes[1], and amounts[1] line up. all array items must validate to unlock
-    criteriaTypes: ["placeholder"], //Upgrade, MaxCurrency, or Item as of now - actual currency is invalid because they are ticked client-side
-    criteriaAmounts: [-1]
-  }]
-};
+//BlankUpgrade(name, schemaVersion, maxLevel, costStructure, unlockStructure) {
+//  name: String;
+//  schemaVersion: String;
+//  maxLevel: Number;
+//  costStructure:
+//    [{
+//     currencyNames: [String],
+//     currencyAmounts: [Number]
+//    }]
+//  unlockStructure:
+//    [{ //each object corresponds to the level #, same as costStructure so unlockStructure[1] is the unlock reqs for level 1
+//     criteriaNames: [String], //the arrays of each here correspond, so cNames[1], cTypes[1], and amounts[1] line up. all array items must validate to unlock
+//     criteriaTypes: [String], //Upgrade, MaxCurrency, or Item as of now - actual currency is invalid because they are ticked client-side
+//     criteriaAmounts: [Number]
+//    }]
+function BlankUpgrade(name, schemaVersion, maxLevel, costStructure, unlockStructure) {
+  this.name = name;
+  this.schemaVersion = schemaVersion;
+  this.maxLevel = maxLevel;
+  this.costStructure = costStructure;
+  this.unlockStructure = unlockStructure;
+}
 
 //todo: make into constructor
 const blankItem = {
@@ -166,10 +175,6 @@ function BlankGlobalStat(name, sortOrder, schemaVersion, initialValue, visibilit
   this.value = initialValue;
   this.visible = visibility;
 }
-
-//Start server listening for web requests
-console.log("[Notice] Server opening on port " + servPort);
-server.listen(servPort);
 
 //Using Pug as templating engine
 app.set('view engine', 'pug');
@@ -192,7 +197,13 @@ function batchLoadDBObjects(schemaObject, arrayOfSourceObjects) {
 function initializeDatabase() {
   //Drop collections
   mTools.dropCollection(GlobalStats, "GlobalStats", {}, function(cbParams) { console.log("[Info] Collection  GlobalStats dropped!"); });
-  mTools.dropCollection(User, "Users", {}, function(cbParams) { console.log("[Info] Collection Users dropped!"); });
+  try {
+    mTools.dropCollection(User, "Users", {}, function(cbParams) { console.log("[Info] Collection Users dropped!"); });
+  } catch (e) {
+    console.log("[Notice] Users collection not dropped.");
+  }
+  mTools.dropCollection(Upgrade, "Upgrades", {}, function(cbParams) { console.log("[Info] Collection Upgrades dropped!"); });
+  
   //Load GlobalStats Objects
   let newGSArr = [];
   newGSArr.push(new BlankGlobalStat("Clicks", 1, "v0.01", 0, true));
@@ -200,8 +211,24 @@ function initializeDatabase() {
   newGSArr.push(new BlankGlobalStat("Ascensions", 2, "v0.01", 0, false));
   batchLoadDBObjects(GlobalStats, newGSArr);
   
+  //Load Upgrades
+  let upgradesArray = jsonfile.readFileSync('./upgrades.json');
+  batchLoadDBObjects(Upgrade, upgradesArray);
+  
+  startListening();
 }
 
+function startListening() {
+  //Start server listening for web requests
+  console.log("[Notice] Server opening on port " + servPort);
+  server.listen(servPort);
+}
+
+/*/
+startListening();
+setInterval(emitGlobalStatsToAll, updateInterval);
+/*/
+//*/
 const prompt = new Confirm('[CRITICAL] (Re-)Initialize Database? This will wipe any existing accounts, stats, etc!');
 prompt.ask(function(answer) {
   if (answer) {
@@ -213,7 +240,7 @@ prompt.ask(function(answer) {
   }
   //Send updates to all connected at given interval (default 10/s)
   setInterval(emitGlobalStatsToAll, updateInterval);
-});
+});//*/
 
 function emitGlobalStatsToAll() {
   if (verboseLogging === true) {
@@ -232,7 +259,7 @@ function emitGlobalStatsToAll() {
 }
 
 //mTools.getObject: function(targetObjectModel, findCriteria, cbParameters, cb) {
-function emitUserUpdate(roomName, username, emissionName = "gameData") {
+function emitUserUpdate(roomName, username, emissionName = "actionResponse") {
   mTools.getObject(User, {username: username}, {emissionName: emissionName, roomName: roomName, username: username, ioObject: io, verboseLogging: verboseLogging}, function(resultArray, cbParams) {
     if (resultArray !== null) {
       if (resultArray.length > 1) {

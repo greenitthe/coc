@@ -25,11 +25,18 @@ socket.on('receipt', function (data) {
   }
 });
 
+function updateCharacterData(data) {
+  characterData.upgrades=data.upgradesOwned;
+  characterData.items=data.itemInventory;
+  characterData.currencies=data.currencyBags;
+}
+
 //gameData
-socket.on('gameData', function (data) {
-  console.log("Received updated game data");
-  console.log(data)
-  //updateFullFunction(data);
+socket.on('actionResponse', function (data) {
+  console.log("Received action response");
+  console.log(data);
+  updateCharacterData(data);
+  refreshRegionAndUnblock();
 });
 
 function attemptLogin(username, pass) {
@@ -41,13 +48,13 @@ function sendAction(actionName, args) {
   socket.emit('attemptAction', {name: actionName, args: args});
 }
 
-//Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
-socket.on('actionReply', function (data) {
-  $('#gamePage').unblock();
-  if (data.needsRun) {
-    data.func(data.args);
-  }
-});
+// //Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
+// socket.on('actionReply', function (data) {
+//   $('#gamePage').unblock();
+//   if (data.needsRun) {
+//     data.func(data.args);
+//   }
+// });
 
 function checkLoginCookie() {
   const username = Cookies.get('username');
@@ -79,9 +86,11 @@ socket.on('loginFailure', function (data) {
 
 socket.on('loginSuccess', function (data) {
   console.log("Login verified! Displaying user info.");
+  console.log(data);
   Cookies.set('username', data.username);
   Cookies.set('cloudsavePass', data.pass);
   $("#userInfoUsername").text(Cookies.get("username"));
+  updateCharacterData(data);
   showUserInfo();
 });
 

@@ -119,6 +119,29 @@ function handleGlobalStatsUpdate(data) {
   });
 }
 
+function refreshRegionAndUnblock() {
+  $('#gamePage').unblock();
+  //refreshRegion();
+}
+
+function refreshRegion() {
+  console.log("Refreshing Region from Character Data");
+  
+  
+  var world = {};
+  world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);
+  decideUpdateMethod("globalAttributesList", "Attributes-Full", {newLIArray: world.headerStats});
+  //now update the current region
+  let regionData = data.regions.find(x => x.name === activeRegion);
+  let region = {};
+  region.name = regionData.displayName;
+  region.attributes = filterUpdateDataForRegionAttributes(data);
+  region.features = regionData.features;
+  decideUpdateMethod("regionAttributesList", "Attributes-Full", {newLIArray: region.attributes});
+  decideUpdateMethod("regionFeaturesList", "Features-Full", {newLIArray: region.features});
+  fullUpdateScheduled = false;
+}
+
 /**
  * Adds a specified location to the sidebar, and if necessary also adds its specified top-level location to the sidebar
  * @param {String} topLevelLocationName E.g. World, Home
@@ -146,18 +169,6 @@ function camelize(str) {
     if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
     return index == 0 ? match.toLowerCase() : match.toUpperCase();
   });
-}
-
-function changeActiveRegion(targetRegion) {
-  $("#sidebar ul>li.active").removeClass("active");
-  var navLink = $("#sidebar ul li ul li .sidebarButton:contains('" + targetRegion + "')");
-  navLink.parent("li").addClass("active");
-  navLink.parent("li").parent("ul").parent("li").addClass("active");
-  activeRegion = targetRegion;
-  Cookies.set("activeRegion", activeRegion);
-  $("#regionName").text(activeRegion);
-  $('#gamePage').block({ message: "Changing regions...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
-  fullUpdateScheduled = true;
 }
 
 function msToTime(s) {
@@ -368,8 +379,3 @@ function msToTime(s) {
   
 //   return ("<li id='" + item.name + "'>" + content + "</li>");
 // }
-
-
-
-//TODO: move activeRegion to server potentially for convenience
-changeActiveRegion(activeRegion);

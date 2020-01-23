@@ -30,3 +30,34 @@ var socket; //the socket communicated on - assigned in sockets.js
 //Clicks Counter (sent in 1 minute intervals)
 var clickCounter = 0;
 var timeLastSentClicks = new Date();
+
+//Character Data
+var characterData = {
+  upgrades: [],
+  items: [],
+  currencies: []
+};
+
+/*characterData {
+ * * upgrades: [{
+ * * * name
+ * * * level
+ * * }]
+ * * items: [{
+ * * * name
+ * * * amount
+ * * }]
+ * * currencies: [{
+ * * * name
+ * * * amount
+ * * * maxAmount
+ * * }]
+*/
+
+//Upgrades/Items/Currencies
+// const upgradesList = [{
+//   name: ,
+//   maxLevel:
+// }, {
+  
+// }]
