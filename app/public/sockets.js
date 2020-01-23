@@ -29,6 +29,7 @@ function updateCharacterData(data) {
   characterData.upgrades=data.upgradesOwned;
   characterData.items=data.itemInventory;
   characterData.currencies=data.currencyBags;
+  refreshRegionAndUnblock();
 }
 
 //gameData
@@ -36,7 +37,6 @@ socket.on('actionResponse', function (data) {
   console.log("Received action response");
   console.log(data);
   updateCharacterData(data);
-  refreshRegionAndUnblock();
 });
 
 function attemptLogin(username, pass) {
@@ -75,7 +75,7 @@ socket.on('GlobalStatsUpdate', function (data) {
   // console.log("Global Stats Update Received:");
   // console.log(data.data);
   handleGlobalStatsUpdate(data.data);
-})
+});
 
 socket.on('loginFailure', function (data) {
   console.log("Login not verified. Reason given: '" + data.message + "' Displaying login box.");
@@ -135,12 +135,12 @@ function parseUserForm() {
 }
 
 function logoutUser() {
-  console.log("User requested logout. Deleting cookies.")
+  console.log("User requested logout. Deleting cookies.");
   socket.emit('logoutUser', { username: Cookies.get('username')});
   Cookies.remove('username');
   Cookies.remove('cloudsavePass');
   // createAnnouncement("ann_usernameNotification", "Successfully Logged Out.", false);
-  setTimeout(function() {showUsername()}, 1000)
+  setTimeout(function() {showUsername()}, 1000);
 }
 
 function checkSendClicks() {

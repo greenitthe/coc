@@ -24,7 +24,7 @@ function changeActiveRegion(targetRegion) {
   Cookies.set("activeRegion", activeRegion);
   $("#regionName").text(activeRegion);
   $('#gamePage').block({ message: "Changing regions... Waiting for server...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
-  sendAction("changeRegion", {});
+  refreshRegionAndUnblock();
 }
 
 //TODO: move activeRegion to server potentially for convenience

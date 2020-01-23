@@ -97,7 +97,15 @@ function changeText(targetElement, newText){
  * @param {Array} data An array of objects (of the GlobalStats schema) containing the updated stat info
  */
 function handleGlobalStatsUpdate(data) {
-  data.forEach(function(item) {
+  let sortedData = data.sort(function(a,b) {
+    const aOrder = a.sortOrder;
+    const bOrder = b.sortOrder;
+    let comparison = 0;
+    aOrder > bOrder ? comparison = 1 : comparison = -1;
+    return comparison;
+  });
+  for (var i = 0; i < sortedData.length; i++) {
+    let item = sortedData[i];
     let gsList = $("#globalAttributesList");
     let targetLI = gsList.find("#" + item.name.toLowerCase());
     if (targetLI.length == 1) {
@@ -116,30 +124,96 @@ function handleGlobalStatsUpdate(data) {
       console.log(targetLI);
       console.log("Warning: In handleGlobalStatsUpdate: Multiple TargetLIs found or unexpected find value.");
     }
-  });
+  }
 }
 
 function refreshRegionAndUnblock() {
   $('#gamePage').unblock();
-  //refreshRegion();
+  refreshRegion();
+}
+
+function refreshRegionAttributes() {
+  characterData.currencies.forEach(function(item) {
+    let aList = $("#regionAttributesList");
+    let targetLI = aList.find("#" + item.name.toLowerCase());
+    if (targetLI.length === 1) {
+      let targetSpan = $($(targetLI[0]).find(".aValue")[0]);
+      if (targetSpan.text() != item.amount.toString() + '/' + item.maxAmount.toString()) {
+        changeText(targetSpan, item.amount.toString() + '/' + item.maxAmount.toString());
+      }
+    }
+    else if (targetLI.length === 0) {
+      aList.append('<li id="' + item.name.toLowerCase() + '"><strong class="aName">' + item.name + '</strong><div><span class="aValue">' + item.amount + '/' + item.maxAmount + '</span><span class="aPValue"></span></div></li>');
+      console.log("In refreshRegion: In refresh attributes: targetLI not found, creating!");
+    }
+    else {
+      console.log(item.name.toLowerCase());
+      console.log(item.amount);
+      console.log(targetLI);
+      console.log("Warning: In refreshRegion: In refresh attributes: Multiple TargetLIs found or unexpected find value.");
+    }
+  });
+}
+
+function refreshRegionItems() {
+  
+}
+
+function refreshRegionUpgrades() {
+  
 }
 
 function refreshRegion() {
   console.log("Refreshing Region from Character Data");
   
+  refreshRegionAttributes();
+  refreshRegionItems();
+  refreshRegionUpgrades();
   
-  var world = {};
-  world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);
-  decideUpdateMethod("globalAttributesList", "Attributes-Full", {newLIArray: world.headerStats});
-  //now update the current region
-  let regionData = data.regions.find(x => x.name === activeRegion);
-  let region = {};
-  region.name = regionData.displayName;
-  region.attributes = filterUpdateDataForRegionAttributes(data);
-  region.features = regionData.features;
-  decideUpdateMethod("regionAttributesList", "Attributes-Full", {newLIArray: region.attributes});
-  decideUpdateMethod("regionFeaturesList", "Features-Full", {newLIArray: region.features});
-  fullUpdateScheduled = false;
+  // var world = {};
+  // world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);
+  // decideUpdateMethod("globalAttributesList", "Attributes-Full", {newLIArray: world.headerStats});
+  // //now update the current region
+  // let regionData = data.regions.find(x => x.name === activeRegion);
+  // let region = {};
+  // region.name = regionData.displayName;
+  // region.attributes = filterUpdateDataForRegionAttributes(data);
+  // region.features = regionData.features;
+  // decideUpdateMethod("regionAttributesList", "Attributes-Full", {newLIArray: region.attributes});
+  // decideUpdateMethod("regionFeaturesList", "Features-Full", {newLIArray: region.features});
+  // fullUpdateScheduled = false;
+}
+
+function buildCardHTML(item) {
+  var content = "";
+  switch (item.cardType) {
+    /***
+    * TODO:
+    * Modify these cases so that there is different stuff for each (with appropriately linked buttons) and make them have a title using item.name rather than a button using it
+    * Coinciding with the above, will need the necessary helper functions for each button whether that be buying something with the button, checking the timer getting rewards and resetting with Timed, or checking harvesting and resetting a given plot for MultiPlot, etc.
+    ***/
+    case "progressBar":
+      content = "<div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + stripWhitespace(item.name) + "')\"><span class='buttonText'>BUTTONTEXT</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>0</span></div><div class='progressRemaining'><span class='progressRemainingText'>10</span></div></div><div class='progressRightLabel'><span>10</span></div></div>";
+      break;
+    
+    // case "automator":
+    //   content = "";
+    //   break;
+     
+    // case "Timed":
+    //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='checkTimedReady(\"" + item.name + "\")'><span class='buttonText'>" + msToTime((Date.parse(item.mixedStorage.startTime) + item.mixedStorage.duration) - new Date().getTime()) + "</span></button>";
+    //   break;
+    
+    // case "Button":
+    //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='buttonUsed(\"" + item.name + "\")'><span class='buttonText'>" + item.buttonText  +"</span></button>";
+    //   break;
+    
+    // case "MultiPlot":
+    //   content = "<button class='entryButton' onclick='plotButton('" + item.name + "')><span class='buttonText'>" + item.name + "</span></button>";
+    //   break;
+  }
+  
+  return ("<li id='" + item.name + "'>" + content + "</li>");
 }
 
 /**
@@ -347,35 +421,3 @@ function msToTime(s) {
 // }
 
 // /** BIG TODO: SOOOO it would be best if this could be designed such that updateCurrencyList and updateIncrementerList just update the text rather than the entire set of lis each time because that's inefficient and also introduces a kind of annoying flashing on hover css... just don't know how best to tackle that right now. This whole thing could stand to be reworked but I want to get actual content in and bring in plinko **/
-
-// function buildCardHTML(item) {
-//   var content = "";
-//   switch (item.cardType) {
-//     /***
-//     * TODO:
-//     * Modify these cases so that there is different stuff for each (with appropriately linked buttons) and make them have a title using item.name rather than a button using it
-//     * Coinciding with the above, will need the necessary helper functions for each button whether that be buying something with the button, checking the timer getting rewards and resetting with Timed, or checking harvesting and resetting a given plot for MultiPlot, etc.
-//     ***/
-//     case "progressBar":
-//       content = "<div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + stripWhitespace(item.name) + "')\"><span class='buttonText'>BUTTONTEXT</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>0</span></div><div class='progressRemaining'><span class='progressRemainingText'>10</span></div></div><div class='progressRightLabel'><span>10</span></div></div>";
-//       break;
-    
-//     case "automator":
-//       content = "";
-//       break;
-     
-//     // case "Timed":
-//     //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='checkTimedReady(\"" + item.name + "\")'><span class='buttonText'>" + msToTime((Date.parse(item.mixedStorage.startTime) + item.mixedStorage.duration) - new Date().getTime()) + "</span></button>";
-//     //   break;
-    
-//     // case "Button":
-//     //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='buttonUsed(\"" + item.name + "\")'><span class='buttonText'>" + item.buttonText  +"</span></button>";
-//     //   break;
-    
-//     // case "MultiPlot":
-//     //   content = "<button class='entryButton' onclick='plotButton('" + item.name + "')><span class='buttonText'>" + item.name + "</span></button>";
-//     //   break;
-//   }
-  
-//   return ("<li id='" + item.name + "'>" + content + "</li>");
-// }

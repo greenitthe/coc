@@ -19,7 +19,7 @@ var allColors = [gold, diamond_teal, white, black, blue, green, red, orange, dar
 var backgroundColor = dark_grey;
 
 //Game Stuff
-var activeRegion = Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "gym";
+var activeRegion = Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
 Cookies.set("activeRegion", activeRegion);
 var fullUpdateScheduled = true;
 
