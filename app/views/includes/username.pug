@@ -1,0 +1,16 @@
+form#usernameForm.form.userSection.animated.slideInDown.initiallyHidden(onSubmit="return false" autocomplete="off")
+  div.formRow
+    label.formLabel(for="usernameField")
+      ="Username"
+    input#usernameField.formInput(type="text" placeholder="Username")
+    small#usernameHelp.formHelp
+      ="Must be unique. Can be changed later."
+  div.formRow
+    label.formLabel(for="passwordField")
+      ="Password"
+    input#passwordField.formInput(type="text" placeholder="Password")
+    small#passwordHelp.formHelp
+      ="Not securely transmitted or stored. Just protects your cloudsave."
+  div
+    button#login.btn.btn-warning.formButton(type="submit")
+      ="Login"

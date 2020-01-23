@@ -1,0 +1,467 @@
+/** Structural **/
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+}
+
+body {
+  font-size: 14px;
+  overflow: hidden;
+  background-color: #575454;
+}
+
+.preventTextSelect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome, Opera and Firefox */
+}
+
+.allowTextSelect {
+  -webkit-touch-callout: text; /* iOS Safari */
+  -webkit-user-select: text; /* Safari */
+   -khtml-user-select: text; /* Konqueror HTML */
+     -moz-user-select: text; /* Old versions of Firefox */
+      -ms-user-select: text; /* Internet Explorer/Edge */
+          user-select: text; /* Non-prefixed version, currently
+                                supported by Chrome, Opera and Firefox */
+}
+
+#gamePage {
+  margin: 0 auto;
+  height: 100%;
+  width: 100%;
+}
+
+#screen {
+  padding: 0;
+  height: 100%;
+}
+
+#region {
+  width: 100%;
+  height: inherit;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+#regionIncrementals {
+  width: 100%;
+  display: flex;
+  height: inherit;
+  overflow: auto;
+}
+
+#rIncWrapper {
+  height: calc(100% + 200%);
+  margin: 5px;
+}
+
+#rIncWrapper li {
+  background-color: white;
+}
+
+#rIncList li {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entryButton {
+  width: 100%;
+  height: auto;
+  padding: 5px 0;
+  background-color: white;
+  color: black;
+  border: none;
+  margin-bottom: 5px;
+  white-space: pre-line;
+}
+
+.collectButton {
+  color: black;
+  background-color: #34eb3a;
+  width: 90%;
+  margin-top: 5%;
+}
+
+.collectButton:hover {
+  color: white;
+  background-color: #126e14;
+}
+
+.entryDescriptor {
+  color: #ababab;
+  white-space: pre-line;
+}
+
+.entryHeader {
+  margin: 5% 0;
+  white-space: pre-line;
+}
+
+.currencyList div strong {
+  color: black;
+}
+
+.currencyList div span {
+  color: black;
+}
+
+.entryHeader {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/** Media Queries **/
+/* Mobile Styles */
+@media only screen and (max-width: 420px) { /* 420px */
+  #rIncList {
+    padding-top: 2vh;
+  }
+  
+  #rIncList li {
+    width: 90%;
+    height: 20vh;
+    margin-bottom: 2vh;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 1vh;
+    justify-content: space-between;
+  }
+  
+  .entryHeader {
+    margin: 0;
+  }
+  
+  .entryButton {
+    width: 60%;
+    align-self: center;
+  }
+  
+  .currencyList li {
+    font-size: 12px;
+    line-height: 14px;
+    margin: 0 4px;
+    padding: 4px 8px;
+  }
+}
+
+/* Tablet Styles */
+@media only screen and (min-width: 421px) and (max-width: 690px) {
+  #rIncList {
+    padding-top: 2vh;
+  }
+  
+  #rIncList li {
+    width: 90%;
+    height: 20vh;
+    margin-bottom: 2vh;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 1vh;
+    justify-content: space-between;
+  }
+  
+  .entryHeader {
+    margin: 0;
+  }
+  
+  .entryButton {
+    width: 60%;
+    align-self: center;
+  }
+  
+  #globalCurrencies div strong {
+    font-size: 12px;
+  }
+  
+  .currencyList li {
+    font-size: 12px;
+    line-height: 14px;
+    margin: 0 4px;
+    padding: 4px 8px;
+  }
+}
+
+/* Laptop Styles */
+@media only screen and (min-width: 691px) and (max-width: 960px) {
+  #rIncList li {
+    width: 14.75vw;
+    min-height: 10vw;
+    height: auto;
+    margin: 10px;
+    line-height: 14px;
+    font-size: 14px;
+  }
+  
+  .entryDescriptor {
+    font-size: 10.5px;
+    line-height: 10.5px;
+  }
+  
+  .entryButton {
+    font-size: 0.9em;
+    line-height: 0.9em;
+  }
+  
+  #globalCurrencies div strong {
+    font-size: 14px;
+  }
+  
+  .currencyList li {
+    font-size: 14px;
+    line-height: 16px;
+    margin: 0 5px;
+    padding: 4px 8px;
+  }
+}
+
+/* Desktop Styles */
+@media only screen and (min-width: 961px) {
+  #rIncList li {
+    width: 14.75vw;
+    min-height: 10vw;
+    height: auto;
+    margin: 12px;
+    line-height: 16px;
+    font-size: 16px;
+  }
+  
+  .entryDescriptor {
+    font-size: 12px;
+    line-height: 12px;
+  }
+  
+  .entryButton {
+    font-size: 1em;
+    line-height: 1em;
+  }
+  
+  #globalCurrencies div strong {
+    font-size: 16px;
+  }
+  
+  .currencyList li {
+    font-size: 16px;
+    line-height: 18px;
+    margin: 0 6px;
+    padding: 4px 8px;
+  }
+}
+
+/** Other Stuff **/
+#gamePage {
+  background-color: white;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.center {
+  margin: auto !important;
+}
+
+#globalCurrencies {
+  background-color: #ebaf76;
+}
+
+#globalCurrencies li {
+  background-color: #FFBE80;
+}
+
+#globalCurrencies>div {
+  width: 100%;
+  background-color: #eb790a;
+  text-align: center;
+  color: white;
+}
+
+.currencyList {
+  text-align: center;
+}
+
+#regionNameWrapper {
+  border-bottom: 1px solid black;
+  background-color: black;
+}
+
+#regionName {
+  color: white;
+  font-size: 30px;
+}
+
+#regionalCurrencies {
+  width: 100%;
+  background-color: #3256EF;
+  color: white;
+}
+
+#regionalCurrencies li {
+  background-color: #6F87F1;
+}
+
+#regionIncrementals {
+  background-color: #CBE2FC;
+}
+
+.incrementalStage {
+  padding: 2vw 0;
+  border-bottom: 0.1rem solid #575454;
+}
+
+#usernameForm {
+  background-color: #eded8e;
+  margin-bottom: 10px !important;
+}
+
+#usernameForm::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  top:100%;
+  left:0%;
+  background-color: #ffcc00;
+  height: 10px;
+}
+
+.incrementer {
+  background-color: #00d0d0;
+  margin: 0 1vw;
+  width: 15vw;
+  height: 15vw;
+  text-align: center;
+}
+
+.incrementer > p {
+  margin: 0;
+  padding: 0;
+}
+
+/****/
+.hozList {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /*border-bottom: 0.1rem solid #575454;*/
+}
+
+.hozList li:first-child {
+  /*border-left: 0.1rem solid #575454;*/
+}
+
+.hozList li {
+  float: left;
+  padding: 0.5rem;
+  margin-left: -0.1rem;
+  margin-bottom: -0.05rem;
+  margin-top: -0.05rem;
+  /*border: 0.1rem solid #575454;*/
+}
+
+/* Animations */
+/* Ellipsis Loading */
+.loading:after {
+  content: '\00a0\00a0\00a0';
+  animation: progress-ellipsis 3s infinite;
+}
+
+@keyframes progress-ellipsis {
+  0% {
+    content: '\00a0\00a0\00a0';
+  }
+  25% {
+    content: '.\00a0\00a0';
+  }
+  50% {
+    content: '..\00a0';
+  }
+  75% {
+    content: '...';
+  }
+}
+
+/* Z-Index */
+nav {
+  z-index: 1000 !important;
+}
+.userSection {
+  z-index: 998 !important;
+}
+
+/* GENERIC FORM STUFF */
+@media only screen and (max-width: 420px) {
+  .formLabel { font-size: 14px; }
+  .formInput { font-size: 12px; }
+  .formHelp { font-size: 8px; }
+}
+
+@media only screen and (min-width: 421px) and (max-width: 690px) {
+  .formLabel { font-size: 16px; }
+  .formInput { font-size: 14px; }
+  .formHelp { font-size: 10px; }
+}
+
+@media only screen and (min-width: 691px) and (max-width: 960px) {
+  .formLabel { font-size: 22px; }
+  .formInput { font-size: 18px; }
+  .formHelp { font-size: 12px; }
+}
+
+@media only screen and (min-width: 961px) {
+  .formLabel { font-size: 26px; }
+  .formInput { font-size: 22px; }
+  .formHelp {font-size: 14px; }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  text-align: center;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  width: 100%;
+}
+
+.formLabel {
+  width: 22.5%;
+  padding-right: 5px;
+  margin: 0;
+}
+
+.formInput {
+  width: 45%;
+  border: none;
+  padding: 5px;
+  /*border-radius: 5px;*/
+}
+
+.formHelp {
+  padding-left: 5px;
+  width: 32.5%;
+}
+
+.formButton {
+  width: 80%;
+}

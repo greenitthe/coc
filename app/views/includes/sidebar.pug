@@ -1,0 +1,40 @@
+nav#sidebar
+  div.sidebar-header.sidebarCollapse
+    h3
+      a
+        ="Co-Op Clicker"
+    strong
+      a
+        ="COC"
+  ul.list-unstyled.components
+    li.active
+      a#worldTopLevelMenu.sidebarButton.dropdown-toggle(href="#worldSubmenu" data-toggle="collapse" aria-expanded="false")
+        i.fa.fa-globe
+        ="World"
+      ul.collapse.list-unstyled#worldSubmenu
+        li.active
+          button.sidebarButton(onclick="changeActiveRegion('World Shop')")
+            ="World Shop"
+        li
+          button.sidebarButton(onclick="changeActiveRegion('Region Tree')")
+            ="Region Tree"
+    li.flow-bottom
+      div.dropup
+        ul.collapse.list-unstyled#otherSubmenu
+          li
+            a.sidebarButton(href="#")
+              ="Pachinko"
+          li
+            a.sidebarButton.active(href="#")
+              ="Bonsai Game"
+        a.sidebarButton.active.dropdown-toggle(href="#otherSubmenu" data-toggle="collapse" aria-expanded="false")
+          i.fa.fa-code-fork
+          ="Projects"
+      div#userInfo.userSection.initiallyHidden.animated.slideInUp.allowTextSelect
+        strong
+          ="Username"
+        span#userInfoUsername
+          ="UNDEFINED"
+        button#logout.btn.btn-warning(type="button")
+          strong
+            ="Logout"

@@ -1,0 +1,590 @@
+/** Imports **/
+/* Tailwind CSS */
+/*@tailwind base;*/
+/*@tailwind components;*/
+/*@tailwind utilities;*/
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+}
+
+/* Styles the entire page, allows for separate sidebar and content. */
+.wrapper {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+#userInfo {
+  height: auto;
+  padding: 5px;
+  margin-top: 5px;
+  background-color: #eded8e;
+  color: black;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#userInfo::before {
+  content: "";
+  position: absolute;
+  width: inherit;
+  top: -5px;
+  left:0%;
+  background-color: #ffcc00;
+  height: 5px;
+}
+
+.initiallyHidden {
+  display: none;
+}
+
+#content {
+  width: 100%;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-height: 100%;
+  font-size: 12px;
+}
+
+/* Set the minimized sidebar height and width */
+#sidebar.active {
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Add margin to the bottom of all primary sidebar entries */
+.components > li {
+  margin-bottom: 0.2rem;
+}
+
+/* Add margin to the icons on the expanded version */
+#sidebar ul li .sidebarButton i {
+  margin-right: 5px;
+}
+
+/* Set font-size for the header */
+#sidebar .sidebar-header strong, #sidebar .sidebar-header h3 {
+  font-size: 30px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Move the arrow icon to the far right for dropdowns */
+a[data-toggle="collapse"] {
+  position: relative;
+}
+
+/* Helps the above */
+.dropdown-toggle::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+/* Make the icon take up less height */
+#sidebar ul li .sidebarButton i {
+  line-height: 0.5em;
+}
+
+/** Sidebar Toggles **/
+/* When unexpanded, hide strong */
+#sidebar .sidebar-header strong {
+    display: none;
+}
+
+/* When expanded, hide h3 */
+#sidebar.active .sidebar-header h3 {
+    display: none;
+}
+
+/* When expanded, show strong */
+#sidebar.active .sidebar-header strong {
+    display: block;
+}
+
+/* When unexpanded, show h3 */
+#sidebar .sidebar-header h3 {
+    display: block;
+}
+
+/* When unexapanded, align buttons to the left. */
+#sidebar ul li .sidebarButton {
+    text-align: left;
+}
+
+/* When expanded, align buttons to the center, pad them, and make the font smaller */
+#sidebar.active ul li .sidebarButton {
+    padding: 20px 10px;
+    text-align: center;
+}
+
+/* When expanded, make the icon large and centered*/
+#sidebar.active ul li .sidebarButton i {
+    display: block;
+    margin: 5px 0;
+}
+
+/* When expanded, make sure the sub-menus are correctly padded*/
+#sidebar.active ul ul a {
+    padding: 10px !important;
+}
+
+/* When expanded, move the arrow position to bottom/center */
+/* Changing the arrow position to bottom center position,
+   translateX(50%) works with right: 50%
+   to accurately  center the arrow */
+#sidebar.active .dropdown-toggle::after {
+    top: auto;
+    bottom: 10px;
+    right: 50%;
+      -webkit-transform: translateX(50%);
+      -moz-transform: translateX(50%);
+      -o-transform: translateX(50%);
+      -ms-transform: translateX(50%);
+    transform: translateX(50%);
+}
+
+/** Media Queries **/
+/* Mobile Styles */
+@media only screen and (max-width: 420px) { /* 420px */
+  /* Note: active is expanded on mobile, whereas it is contracted on desktop */
+  #sidebar {
+    min-width: 15%;
+    max-width: 15%;
+    font-size: 12px;
+  }
+  
+  #sidebar.active {
+    min-width: 30%;
+    max-width: 30%;
+    font-size: 16px;
+  }
+  
+  #sidebar .sidebar-header strong {
+    font-size: 20px;
+  }
+  
+  #sidebar ul li .sidebarButton i {
+    font-size: 18px;
+  }
+  
+  #sidebar.active ul li .sidebarButton i {
+    font-size: 10px;
+  }
+  
+  #sidebar ul ul .sidebarButton {
+    padding-left: 10px !important ;
+  }
+  
+  #sidebar.active ul ul .sidebarButton {
+    padding-left: 30px !important;
+    font-size: 12px;
+  }
+  
+  #userInfo {
+    font-size: 10px;
+  }
+  
+  #logout strong {
+    font-size: 10px;
+    line-height: 10px;
+  }
+  
+  #logout {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 6px;
+    padding-top: 3px;
+    width: 90%;
+  }
+}
+
+/* Tablet Styles */
+@media only screen and (min-width: 421px) and (max-width: 690px) {
+  /* Note: active is expanded on mobile, whereas it is contracted on desktop */
+  #sidebar {
+    min-width: 15%;
+    max-width: 15%;
+    font-size: 14px;
+  }
+  
+  #sidebar.active {
+    min-width: 22.5%;
+    max-width: 22.5%;
+    font-size: 16px;
+  }
+  
+  #sidebar.active ul li .sidebarButton i {
+    font-size: 10px;
+  }
+  
+  #sidebar .sidebar-header strong {
+    font-size: 25px;
+  }
+  
+  #sidebar .sidebar-header h3 {
+    font-size: 28px;
+  }
+  
+  #sidebar ul ul .sidebarButton {
+    padding-left: 15px !important;
+  }
+  
+  #sidebar.active ul ul .sidebarButton {
+    padding-left: 30px !important;
+    font-size: 15px;
+  }
+  
+  #userInfo {
+    font-size: 12px;
+  }
+  
+  #logout strong {
+    font-size: 12px;
+    line-height: 12px;
+  }
+  
+  #logout {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    width: 90%;
+  }
+}
+
+/* Laptop Styles */
+@media only screen and (min-width: 691px) and (max-width: 960px) {
+  /* Note: active is expanded on mobile, whereas it is contracted on desktop */
+  #sidebar {
+    min-width: 18%;
+    max-width: 18%;
+    font-size: 18px;
+  }
+  
+  #sidebar.active {
+    min-width: 13.5%;
+    max-width: 13.5%;
+    font-size: 17px;
+  }
+  
+  #sidebar.active ul li .sidebarButton i {
+    font-size: 20px;
+  }
+  
+  #sidebar .sidebar-header strong {
+    font-size: 40px;
+  }
+  
+  #sidebar ul ul .sidebarButton {
+    padding-left: 20px !important;
+  }
+  
+  #sidebar.active ul ul .sidebarButton {
+    padding-left: 20px !important;
+    font-size: 16px;
+  }
+  
+  #userInfo {
+    font-size: 14px;
+  }
+  
+  #logout strong {
+    font-size: 14px;
+    line-height: 14px;
+  }
+  
+  #logout {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    width: 90%;
+  }
+}
+
+/* Desktop Styles */
+@media only screen and (min-width: 961px) {
+  /* Note: active is expanded on mobile, whereas it is contracted on desktop */
+  #sidebar {
+    min-width: 15%;
+    max-width: 15%;
+    font-size: 20px;
+  }
+  
+  #sidebar.active {
+    min-width: 8%;
+    max-width: 8%;
+    font-size: 16px;
+  }
+  
+  #sidebar.active ul li .sidebarButton i {
+    font-size: 30px;
+  }
+  
+  #sidebar .sidebar-header strong {
+    font-size: 30px;
+  }
+  
+  #sidebar ul ul .sidebarButton {
+    padding-left: 30px !important;
+  }
+  
+  #sidebar.active ul ul .sidebarButton {
+    padding-left: 10px !important;
+    font-size: 18px;
+  }
+  
+  #userInfo {
+    font-size: 16px;
+  }
+  
+  #logout strong {
+    font-size: 16px;
+    line-height: 16px;
+  }
+  
+  #logout {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    width: 90%;
+  }
+}
+
+
+/** Basically just reverses the .active setting for mobile so it starts closed **/
+@media (max-width: 690px) { /* 768px the previous value */
+  #sidebar.active ul li .sidebarButton i {
+    margin-right: 5px;
+  }
+  
+  /*Toggles*/
+  /* When unexpanded, hide h3 */
+  #sidebar .sidebar-header h3 {
+      display: none;
+  }
+  
+  /* When expanded, hide strong */
+  #sidebar.active .sidebar-header strong {
+      display: none;
+  }
+  
+  /* When expanded, show h3 */
+  #sidebar.active .sidebar-header h3 {
+      display: block;
+  }
+  
+  /* When unexpanded, show strong */
+  #sidebar .sidebar-header strong {
+      display: block;
+  }
+  
+  /* When exapanded, align buttons to the left. */
+  #sidebar.active ul li .sidebarButton {
+      text-align: left;
+  }
+  
+  #sidebar ul li .sidebarButton {
+      text-align: center;
+  }
+  
+  /* When unexpanded, align buttons to the center, pad them, and make the font smaller */
+  #sidebar ul li .sidebarButton {
+      padding: 20px 10px;
+  }
+  
+  /* When expanded, make the icon small again */
+  #sidebar.active ul li .sidebarButton i {
+    font-size: 1rem;
+  }
+  
+  /* When unexpanded, make the icon large and centered*/
+  #sidebar ul li .sidebarButton i {
+      margin-right:  0;
+      display: block;
+      margin: 0.5rem 0;
+  }
+  
+  #sidebar.active ul li .sidebarButton i {
+    display: inline-block;
+  }
+  
+  /* When unexpanded, make sure the sub-menus are correctly padded*/
+  #sidebar ul ul a {
+      padding: 10px !important;
+  }
+  
+  /* When unexpanded, move the arrow position to bottom/center */
+  /* Changing the arrow position to bottom center position,
+     translateX(50%) works with right: 50%
+     to accurately  center the arrow */
+  #sidebar .dropdown-toggle::after {
+      top: auto;
+      bottom: 5px;
+      right: 50%;
+        -webkit-transform: translateX(50%);
+        -moz-transform: translateX(50%);
+        -o-transform: translateX(50%);
+        -ms-transform: translateX(50%);
+      transform: translateX(50%);
+  }
+  
+  /* Move the arrow icon to the far right for dropdowns */
+  #sidebar.active .dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+  }
+}
+
+
+
+/** Basically more styling stuff - optional but makes the sidebar nice **/
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+}
+
+p {
+    font-family: 'Poppins', sans-serif;
+    /*font-size: 1.1em;*/
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #999;
+}
+
+.sidebarButton, .sidebarButton:hover, .sidebarButton:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+#sidebar {
+    /* don't forget to add all the previously mentioned styles here too */
+    background: #343a40;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar .sidebar-header {
+    padding: 5px;
+    padding-top: 10px;
+    background: #343a40;
+    color: #24d100;
+}
+
+#sidebar .sidebar-header h3 {
+  margin: 0;
+}
+
+/* Pad the sidebar items away from the title */
+#sidebar ul.components {
+    padding-top: 5px;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li .sidebarButton {
+    padding: 10px;
+    display: block;
+    width: 100%;
+}
+#sidebar ul li .sidebarButton:hover {
+    color: #fff;
+    background: #168100;
+}
+#sidebar ul li.active .sidebarButton:hover {
+    background: #168100;
+}
+#sidebar ul li.active > .sidebarButton {
+    color: #fff;
+    background: #24d100;
+}
+
+button {
+  border: none;
+  background-color: transperant;
+  outline: none;
+}
+
+.dropdown-toggle[aria-expanded="true"] ~ ul > li > .sidebarButton, .dropdown-toggle[aria-expanded="false"] ~ .collapsing > li > .sidebarButton {
+  background-color: #2B2F33;
+}
+.dropdown-toggle[aria-expanded="true"] ~ ul > li.active > .sidebarButton, .dropdown-toggle[aria-expanded="false"] ~ .collapsing > li.active > .sidebarButton {
+  color: #fff;
+  background: #24d100;
+}
+ul ul .sidebarButton {
+    background: #24d100;
+}
+.components > li > li {
+  background: #000 !important;
+}
+.components > li.active > li {
+  background: #fff !important;
+}
+.components {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+.components > .flow-bottom {
+  margin-top: auto !important;
+}
+.dropup {
+  margin-bottom: 0 !important;
+}
+
+.dropup .sidebarButton .active:hover {
+  background-color: #1269BF !important;
+  /*Hover blue*/
+}
+
+.dropup .sidebarButton.active {
+  background-color: #00AAFF !important;
+  /*Active blue*/
+}
+
+.dropup .sidebarButton {
+  background-color: #2B2F33 !important;
+  /*Dark grey*/
+}
+
+.dropup .sidebarButton {
+  background-color: #1785F3 !important;
+}
+
+.dropup .sidebarButton:hover {
+  background-color: #1269BF !important;
+  /*Hover blue*/
+}
