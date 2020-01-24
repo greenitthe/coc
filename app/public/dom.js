@@ -49,7 +49,8 @@ function updateClickCounter() {
 
 //Progress bar stuff
 function getProgressBarPercent($targetProgressHolder) {
-  let onePercent = $targetProgressHolder.width() / 100;
+  let progressHolderWidth = $($targetProgressHolder.find(".progressHolder")[0]).width();
+  let onePercent = progressHolderWidth / 100;
   let currentWidth = $targetProgressHolder.find(".progressBar").width();
   let currentPercent = currentWidth / onePercent;
   return currentPercent;
@@ -59,19 +60,20 @@ function getProgressBarPercent($targetProgressHolder) {
 function addPercentToProgressBar($targetProgressHolder, addPercent, pBarLabel, rBarLabel, rightLabel) {
   let oldPercent = getProgressBarPercent($targetProgressHolder);
   let newPercent = oldPercent + addPercent;
-  setProgressBar($targetProgressHolder, newPercent, pBarLabel, rBarLabel, rightLabel);
+  setProgressBar($targetProgressHolder, newPercent, pBarLabel, rBarLabel, rightLabel, 100);
 }
 
-function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, rightLabel) {
-  let progressBarWidth = percent * $targetProgressHolder.width() / 100;
+function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, rightLabel, speed) {
+  let progressHolderWidth = $($targetProgressHolder.find(".progressHolder")[0]).width();
+  let progressBarWidth = percent * progressHolderWidth / 100;
   if (percent < 1) { //new percent less than 1, hide left text
     $targetProgressHolder.find(".progressBarText").hide();
   }
   else { //new percent greater than or equal to 1, show left text
     $targetProgressHolder.find(".progressBarText").show();
   }
-  $targetProgressHolder.find(".progressBar").animate({width: progressBarWidth }, 500);
-  $targetProgressHolder.find(".progressRemaining").animate({width: ((100 - (progressBarWidth*100)) / 100) }, 500);
+  $targetProgressHolder.find(".progressBar").animate({width: progressBarWidth }, speed);
+  $targetProgressHolder.find(".progressRemaining").animate({width: ((100 - (progressBarWidth*100)) / 100) }, speed);
   $targetProgressHolder.find(".progressBarText").html(pBarLabel);
   $targetProgressHolder.find(".progressRemainingText").html(rBarLabel);
   $targetProgressHolder.find(".progressRightLabel").html(rightLabel);
@@ -163,12 +165,39 @@ function refreshRegionUpgrades() {
   
 }
 
+function refreshRegionFeatures() {
+  var currentRegion = regions.filter(aRegion => aRegion.name == activeRegion)[0];
+  var featuresList = $("#regionFeaturesList");
+  currentRegion.features.forEach(function (item) {
+    var content = "";
+    var targetLI = featuresList.find("#" + item.name);
+    switch(item.cardType) {
+      case "progressBar":
+        content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>BUTTONTEXT</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
+        if (item.actualPercent != getProgressBarPercent($("#" + item.name + " .progressWrapper"))) {
+          console.log("not the same")
+          
+        }
+        break;
+    }
+    if (targetLI.length>0) {
+      if (content != targetLI.html()) {
+        targetLI.html(content);
+      }
+    }
+    else {
+      featuresList.append(content);
+    }
+  });
+}
+
 function refreshRegion() {
   console.log("Refreshing Region from Character Data");
   
   refreshRegionAttributes();
   refreshRegionItems();
   refreshRegionUpgrades();
+  refreshRegionFeatures();
   
   // var world = {};
   // world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);

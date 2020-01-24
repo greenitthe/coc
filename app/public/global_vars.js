@@ -54,6 +54,14 @@ var characterData = {
  * * }]
 */
 
+//Regions
+function Region(name, features) {
+  this.name = name;
+  this.features = features;
+}
+var regions = [];
+regions.push(new Region("Singularity", [{name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", progressRequired: 20, currentProgress: 0, actualPercent: 0, onCompletion: function() { characterData.currencies.filter(item => item.name = "Energy")[0].amount++; } }]));
+console.log(regions)
 //Upgrades/Items/Currencies
 // const upgradesList = [{
 //   name: ,

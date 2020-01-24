@@ -127,7 +127,7 @@ function BlankUser(username, pass, schemaVersion) {
     amount: "0"
   }];
   this.currencyBags = [{
-    name: "Money",
+    name: "Energy",
     amount: 0,
     maxAmount: 5
   }];
@@ -224,11 +224,11 @@ function startListening() {
   server.listen(servPort);
 }
 
-/*/
+//*/
 startListening();
 setInterval(emitGlobalStatsToAll, updateInterval);
 /*/
-//*/
+//*
 const prompt = new Confirm('[CRITICAL] (Re-)Initialize Database? This will wipe any existing accounts, stats, etc!');
 prompt.ask(function(answer) {
   if (answer) {

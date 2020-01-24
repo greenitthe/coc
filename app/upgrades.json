@@ -9,11 +9,11 @@
         "currencyAmounts": [-1]
       },
       {
-        "currencyNames": ["Money"],
+        "currencyNames": ["Energy"],
         "currencyAmounts": [20]
       },
       {
-        "currencyNames": ["Money", "Eggs"],
+        "currencyNames": ["Energy", "Money"],
         "currencyAmounts": [1000, 10]
       }
     ],
@@ -24,13 +24,13 @@
         "criteriaAmounts": [-1]
       },
       {
-        "criteriaNames": ["Money"],
+        "criteriaNames": ["Energy"],
         "criteriaTypes": ["MaxCurrency"],
         "criteriaAmounts": [5]
       },
       {
-        "criteriaNames": ["Money", "Eggs"],
-        "criteriaTypes": ["MaxCurrency", "Item"],
+        "criteriaNames": ["Energy", "Money"],
+        "criteriaTypes": ["MaxCurrency", "MaxCurrency"],
         "criteriaAmounts": [20, 1]
       }
     ]
