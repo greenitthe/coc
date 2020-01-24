@@ -39,7 +39,19 @@ function buttonUsed(type, name) {
       setProgressBar(pBarHolder, targetFeature.actualPercent, cProg, pReq - cProg, pReq, 100);
       break;
     case "upgradeShop":
-      
+      var mUO = upgradeList.filter(upgrade => upgrade.name == targetFeature.upgradeTarget)[0];
+      var oUO = characterData.upgrades.filter(upgrade => upgrade.name == targetFeature.upgradeTarget)[0];
+      var canAfford = true;
+      for(var i = 0; i < mUO.costStructure[oUO.level].currencyNames.length; i++) {
+        let cName = mUO.costStructure[oUO.level].currencyNames[i];
+        let targetCharCurr = characterData.currencies.filter(curr => curr.name == cName)[0];
+        let currencyAmount = mUO.costStructure[oUO.level].currencyAmounts[i];
+        ((targetCharCurr.maxAmount >= currencyAmount) && (targetCharCurr.amount >= currencyAmount)) ? "" : canAfford = false;
+      }
+      console.log("canAfford: " + canAfford);
+      if (canAfford) {
+        sendAction("upgradePurchase", {upgradeName: targetFeature.upgradeTarget});
+      }
       break;
   }
   saveGame();

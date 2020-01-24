@@ -212,7 +212,7 @@ function initializeDatabase() {
   batchLoadDBObjects(GlobalStats, newGSArr);
   
   //Load Upgrades
-  let upgradesArray = jsonfile.readFileSync('./upgrades.json');
+  let upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
   batchLoadDBObjects(Upgrade, upgradesArray);
   
   startListening();
@@ -386,10 +386,6 @@ io.on('connection', function (socket) {
     //Based on the name of the action, select the appropriate response
     switch(data.name) {
       case "currencyUpdate":
-        //data.args.currencies;
-        //name
-        //amount
-        //maxAmount
         mTools.getObject(User, {username: username}, {currencies: data.args.currencies, mTools: mTools, User: User, username: username}, function(arrRes, params) {
           let newArr = arrRes[0].currencyBags.map(function (cB) {
             let filteredCurrs = params.currencies.filter(curr => curr.name == cB.name);
@@ -402,38 +398,28 @@ io.on('connection', function (socket) {
             cB.amount = newAmount;
             return cB;
           });
-          // params.currencies.forEach(function(item) {
-          //   let thisBag = arrRes[0].currencyBags.filter(curr => curr.name == item.name)[0];
-          //   let curAmount = thisBag.amount;
-          //   let maxAmount = thisBag.maxAmount;
-          //   let newAmount = item.amount > maxAmount ? curAmount + maxAmount : curAmount + item.amount;
-          //   let pushValue = { '$set':
-          //     {'currencyBags.$.amount': newAmount}
-          //   };
-          //   updateKeyValues.push(pushValue);
-          // });
           params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newArr}], function(err, object) {if(err){console.log(err);}else{console.log(object)}});
         });
         setTimeout(emitUserUpdate, 2000, "user_" + username, username);
-        // const userSchema = new Schema({
-        //   username: String,
-        //   pass: String,
-        //   schemaVersion: String,
-        //   lastSeen: Date,
-        //   upgradesOwned: [{
-        //     name: String,
-        //     level: Number
-        //   }],
-        //   itemInventory: [{
-        //     name: String,
-        //     amount: Number
-        //   }],
-        //   currencyBags: [{
-        //     name: String,
-        //     amount: Number,
-        //     maxAmount: Number //Upgraded by upgrades and items, but the max is ultimately server side to reduce cheating
-        //   }]
-        // });
+        break;
+      case "upgradePurchase":
+        let targetUpgrade = data.args.upgradeName;
+        console.log(targetUpgrade)
+        
+        
+        
+        
+        
+        
+        //TODO: Finish writing this
+        
+        
+        
+        
+        
+        
+        
+        
         break;
     }
   });

@@ -134,6 +134,20 @@ function refreshRegionAndUnblock() {
   refreshRegion();
 }
 
+
+
+
+
+
+/** BIG TODO: ATOMIZE THESE REFRESHES INTO SMALLER FUNCTIONS SO THAT IT'S LESS EFFORT TO MAKE NEW ONES **/
+
+
+
+
+
+
+
+
 function refreshRegionAttributes() {
   characterData.currencies.forEach(function(item) {
     let aList = $("#regionAttributesList");
@@ -163,10 +177,31 @@ function refreshRegionItems() {
 
 function refreshRegionUpgrades() {
   
+  //This may be wrapped into features entirely instead
+  
+  
+  // var currentRegion = getCurrentRegion();
+  // var uList = $("#regionUpgradesList");
+  
+  // currentRegion.features.forEach(function (item) {
+  //   var content = "";
+  //   var targetLI = uList.find("#" + item.name);
+  //   switch(item.cardType);
+  // });
+  
+    // var currentRegion = regoins.filter(aRegion => aRegion.a)
+    // characterData.upgrades.forEach(function(item)) {
+    //   let uList = $("#regionUpgradesList");
+    //   let targetLI = uList.find("#" + item.name.toLowerCase());
+    //   if (targetLI.length === 1) {
+    //     let targetSpan = $($(targetLI[0]).find".aValue")[0]);
+    //     if (targetSpan.text() != item.)
+    //   }
+    // }
 }
 
 function refreshRegionFeatures() {
-  var currentRegion = regions.filter(aRegion => aRegion.name == activeRegion)[0];
+  var currentRegion = getCurrentRegion();
   var featuresList = $("#regionFeaturesList");
   currentRegion.features.forEach(function (item) {
     var content = "";
@@ -174,6 +209,12 @@ function refreshRegionFeatures() {
     switch(item.cardType) {
       case "progressBar":
         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
+        break;
+      
+      case "upgradeShop":
+        let ownedUpgradeObject = characterData.upgrades.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
+        let masterUpgradeObject = upgradeList.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
+        content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('upgradeShop', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + ownedUpgradeObject.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (masterUpgradeObject.maxLevel - ownedUpgradeObject.level) + "</span></div></div><div class='progressRightLabel'><span>" + masterUpgradeObject.maxLevel + "</span></div></div></li>";
         break;
     }
     if (targetLI.length<=0) {
@@ -188,6 +229,10 @@ function refreshRegionFeatures() {
     //   featuresList.append(content);
     // }
   });
+}
+
+function getCurrentRegion() {
+  return regions.filter(aRegion => aRegion.name == activeRegion)[0];
 }
 
 function refreshRegion() {
