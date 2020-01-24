@@ -1,30 +1,3 @@
-//Socket Stuff
-socket = io.connect('http://brct.io' + servPort); //the socket communicated on
-
-socket.on('establish', function (data) {
-  if (data.port == servPort) {
-    console.log("Establishing packet received, port agreement verified, sending acknowledgement...");
-    socket.emit('acknowledge', { confirmation: true });
-    console.log("Awaiting receipt...");
-  }
-  else {
-    console.log("Establishing packet received, PORTS NOT IN AGREEMENT! ServPort: " + servPort + " | data:");
-    console.log(data);
-    console.log("Sending error");
-    socket.emit('acknowledge', { confirmation: false });
-  }
-});
-
-socket.on('receipt', function (data) {
-  if (data.confirmation) {
-    console.log("Connection receipt confirmed by server.");
-    checkLoginCookie();
-  }
-  else {
-    console.log("Connection receipt unconfirmed by server.");
-  }
-});
-
 function updateCharacterData(data) {
   characterData.upgrades=data.upgradesOwned;
   characterData.items=data.itemInventory;
@@ -32,13 +5,6 @@ function updateCharacterData(data) {
   saveGame();
   refreshRegionAndUnblock();
 }
-
-//gameData
-socket.on('actionResponse', function (data) {
-  console.log("Received action response");
-  console.log(data);
-  updateCharacterData(data);
-});
 
 function attemptLogin(username, pass) {
   if (!username || !pass) { console.log("ERROR: ATTEMPTING LOGIN WITH UNDEFINED USER (" + username + ") OR PASS (" + pass + ")! ABORTING"); return; }
@@ -48,14 +14,6 @@ function attemptLogin(username, pass) {
 function sendAction(actionName, args) {
   socket.emit('attemptAction', {name: actionName, args: args});
 }
-
-// //Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
-// socket.on('actionReply', function (data) {
-//   $('#gamePage').unblock();
-//   if (data.needsRun) {
-//     data.func(data.args);
-//   }
-// });
 
 function checkLoginCookie() {
   const username = Cookies.get('username');
@@ -72,41 +30,9 @@ function checkLoginCookie() {
   }
 }
 
-socket.on('GlobalStatsUpdate', function (data) {
-  // console.log("Global Stats Update Received:");
-  // console.log(data.data);
-  handleGlobalStatsUpdate(data.data);
-});
-
-socket.on('loginFailure', function (data) {
-  console.log("Login not verified. Reason given: '" + data.message + "' Displaying login box.");
-  Cookies.remove('username');
-  Cookies.remove('cloudsavePass');
-  showUsername();
-});
-
-socket.on('loginSuccess', function (data) {
-  console.log("Login verified! Displaying user info.");
-  console.log(data);
-  Cookies.set('username', data.username);
-  Cookies.set('cloudsavePass', data.pass);
-  $("#userInfoUsername").text(Cookies.get("username"));
-  updateCharacterData(data);
-  showUserInfo();
-});
-
-socket.on('clicksConfirmed', function (data) {
-  console.log(data.message);
-  clickCounter = 0;
-  updateClickCounter();
-});
-
-//Event Detection
-$("#login").click(parseUserForm);
-$("#logout").click(logoutUser);
-
 //Parse Username Box
 function parseUserForm() {
+  $('#gamePage').unblock();
   // hideAnnouncement("ann_usernameNotification");
   console.log("User Form submitted. Attempting to parse.");
   const usernameInput = $("#usernameField").val();
@@ -159,6 +85,92 @@ function checkSendClicks() {
     console.log("Time till next click update sent: " + ((60000-(newDate - timeLastSentClicks))/1000));
   }
 }
+
+//Socket Stuff
+function connectSocket() {
+  socket = io.connect('http://brct.io' + servPort); //the socket communicated on
+  
+  socket.on('establish', function (data) {
+    if (data.port == servPort) {
+      console.log("Establishing packet received, port agreement verified, sending acknowledgement...");
+      socket.emit('acknowledge', { confirmation: true });
+      console.log("Awaiting receipt...");
+    }
+    else {
+      console.log("Establishing packet received, PORTS NOT IN AGREEMENT! ServPort: " + servPort + " | data:");
+      console.log(data);
+      console.log("Sending error");
+      socket.emit('acknowledge', { confirmation: false });
+    }
+  });
+  
+  socket.on('receipt', function (data) {
+    if (data.confirmation) {
+      console.log("Connection receipt confirmed by server.");
+      checkLoginCookie();
+    }
+    else {
+      console.log("Connection receipt unconfirmed by server.");
+    }
+  });
+  
+  //gameData
+  socket.on('actionResponse', function (data) {
+    console.log("Received action response");
+    console.log(data);
+    updateCharacterData(data);
+  });
+  
+  // //Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
+  // socket.on('actionReply', function (data) {
+  //   $('#gamePage').unblock();
+  //   if (data.needsRun) {
+  //     data.func(data.args);
+  //   }
+  // });
+  
+  socket.on('GlobalStatsUpdate', function (data) {
+    // console.log("Global Stats Update Received:");
+    // console.log(data.data);
+    handleGlobalStatsUpdate(data.data);
+  });
+  
+  socket.on('loginFailure', function (data) {
+    console.log("Login not verified. Reason given: '" + data.message + "' Displaying login box.");
+    Cookies.remove('username');
+    Cookies.remove('cloudsavePass');
+    showUsername();
+  });
+  
+  socket.on('loginSuccess', function (data) {
+    console.log("Login verified! Displaying user info.");
+    console.log(data);
+    Cookies.set('username', data.username);
+    Cookies.set('cloudsavePass', data.pass);
+    $("#userInfoUsername").text(Cookies.get("username"));
+    updateCharacterData(data);
+    showUserInfo();
+    loadStatus--;
+  });
+  
+  socket.on('clicksConfirmed', function (data) {
+    console.log(data.message);
+    clickCounter = 0;
+    updateClickCounter();
+  });
+  
+  //Event Detection
+  $("#login").click(parseUserForm);
+  $("#logout").click(logoutUser);
+  
+  loadStatus--;
+}
+
+
+connectSocket();
+// setTimeout(connectSocket, 100);
+
+
 
 //updateFull - basically gameData but forcing client to do a full update
 //TODO: Deprecate this because if DOM needs changing it should come from a specific command from the server rather than a gameData update

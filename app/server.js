@@ -206,8 +206,8 @@ function initializeDatabase() {
   
   //Load GlobalStats Objects
   let newGSArr = [];
-  newGSArr.push(new BlankGlobalStat("Clicks", 1, "v0.01", 0, true));
-  newGSArr.push(new BlankGlobalStat("Level", 0, "v0.01", 0, true));
+  newGSArr.push(new BlankGlobalStat("Total Clicks", 1, "v0.01", 0, true));
+  newGSArr.push(new BlankGlobalStat("Global Level", 0, "v0.01", 0, true));
   newGSArr.push(new BlankGlobalStat("Ascensions", 2, "v0.01", 0, false));
   batchLoadDBObjects(GlobalStats, newGSArr);
   

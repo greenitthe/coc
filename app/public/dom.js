@@ -197,51 +197,6 @@ function refreshRegion() {
   refreshRegionItems();
   refreshRegionUpgrades();
   refreshRegionFeatures();
-  
-  // var world = {};
-  // world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);
-  // decideUpdateMethod("globalAttributesList", "Attributes-Full", {newLIArray: world.headerStats});
-  // //now update the current region
-  // let regionData = data.regions.find(x => x.name === activeRegion);
-  // let region = {};
-  // region.name = regionData.displayName;
-  // region.attributes = filterUpdateDataForRegionAttributes(data);
-  // region.features = regionData.features;
-  // decideUpdateMethod("regionAttributesList", "Attributes-Full", {newLIArray: region.attributes});
-  // decideUpdateMethod("regionFeaturesList", "Features-Full", {newLIArray: region.features});
-  // fullUpdateScheduled = false;
-}
-
-function buildCardHTML(item) {
-  var content = "";
-  switch (item.cardType) {
-    /***
-    * TODO:
-    * Modify these cases so that there is different stuff for each (with appropriately linked buttons) and make them have a title using item.name rather than a button using it
-    * Coinciding with the above, will need the necessary helper functions for each button whether that be buying something with the button, checking the timer getting rewards and resetting with Timed, or checking harvesting and resetting a given plot for MultiPlot, etc.
-    ***/
-    case "progressBar":
-      content = "<div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + stripWhitespace(item.name) + "')\"><span class='buttonText'>BUTTONTEXT</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>0</span></div><div class='progressRemaining'><span class='progressRemainingText'>10</span></div></div><div class='progressRightLabel'><span>10</span></div></div>";
-      break;
-    
-    // case "automator":
-    //   content = "";
-    //   break;
-     
-    // case "Timed":
-    //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='checkTimedReady(\"" + item.name + "\")'><span class='buttonText'>" + msToTime((Date.parse(item.mixedStorage.startTime) + item.mixedStorage.duration) - new Date().getTime()) + "</span></button>";
-    //   break;
-    
-    // case "Button":
-    //   content = "<div class='entryHeader'><strong>" + item.name + "</strong></div><div class='entryDescriptor'><span>" + item.descriptorText + "</span></div><button class='entryButton collectButton' onclick='buttonUsed(\"" + item.name + "\")'><span class='buttonText'>" + item.buttonText  +"</span></button>";
-    //   break;
-    
-    // case "MultiPlot":
-    //   content = "<button class='entryButton' onclick='plotButton('" + item.name + "')><span class='buttonText'>" + item.name + "</span></button>";
-    //   break;
-  }
-  
-  return ("<li id='" + item.name + "'>" + content + "</li>");
 }
 
 /**

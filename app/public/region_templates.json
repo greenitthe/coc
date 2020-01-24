@@ -12,7 +12,18 @@
         "currentProgress": 0,
         "actualPercent": 0,
         "currencyTarget": "Energy",
-        "currencyAmount": 1
+        "currencyAmount": 1,
+        "spendTarget": "",
+        "spendAmount": 0
+      },
+      {
+        "name": "coreUpgrade",
+        "displayName": "Upgrade Core",
+        "cardType": "upgradeShop",
+        "description": "Upgrade your Core to unlock new features and regions.",
+        "buttonText": "Upgrade",
+        "upgradeTarget" : "",
+        "unlocked": false
       }
     ]
   }

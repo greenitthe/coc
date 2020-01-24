@@ -30,6 +30,7 @@ function buttonUsed(type, name) {
       let pReq = targetFeature.progressRequired;
       if (cProg >= pReq - 0.1) {
         targetFeature.currentProgress = cProg = 0;
+        targetFeature.spendTarget !== "" ? lookupAndSpendCurrency(targetFeature.spendTarget, targetFeature.spendAmount) : "";
         updateCDataCurrency(targetFeature.currencyTarget, targetFeature.currencyAmount);
       }
       let percentPerProgress = (1/pReq)*100;
@@ -37,9 +38,16 @@ function buttonUsed(type, name) {
       let pBarHolder = $("#regionFeaturesList #" + name + " .progressWrapper");
       setProgressBar(pBarHolder, targetFeature.actualPercent, cProg, pReq - cProg, pReq, 100);
       break;
+    case "upgradeShop":
+      
+      break;
   }
   saveGame();
   refreshRegion();
+}
+
+function lookupAndSpendCurrency(spendTarget, spendAmount) {
+  
 }
 
 function changeActiveRegion(targetRegion) {
@@ -50,8 +58,19 @@ function changeActiveRegion(targetRegion) {
   activeRegion = targetRegion;
   Cookies.set("activeRegion", activeRegion);
   $("#regionName").text(activeRegion);
-  $('#gamePage').block({ message: "Changing regions... Waiting for server...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
-  refreshRegionAndUnblock();
+  $('#gamePage').block({ message: "Loading region... Waiting for server...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
+  queueAfterLoadStatus(refreshRegionAndUnblock, {});
+}
+
+function queueAfterLoadStatus(functionToRun, argumentsToPass) {
+  if (loadStatus === 0) {
+    console.log("Load Status not Finished");
+    functionToRun(argumentsToPass);
+  }
+  else {
+    console.log("Fully loaded... Unlocking region.");
+    setTimeout(queueAfterLoadStatus, 100, functionToRun, argumentsToPass);
+  }
 }
 
 //TODO: move activeRegion to server potentially for convenience

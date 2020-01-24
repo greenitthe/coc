@@ -1,3 +1,8 @@
+//Toggles whether looks at cookies for region information or from the blank template.
+const resetTemplates = true;
+// $('#gamePage').block({ message: "Loading assets...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
+var loadStatus = 3; //on 0 will enable game, each critical component should subtract 1
+
 //Color Stuff
 //standardColors:
 var gold = "#fcf003";
@@ -75,19 +80,20 @@ function Region(name, features) {
 //Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
 let loadedRegions = Cookies.get("regions");
 var regions = [];
-if (loadedRegions !== undefined) {
+if (loadedRegions !== undefined && resetTemplates == false) {
   console.log("Regions loaded from cookies");
   regions = JSON.parse(loadedRegions);
   //TODO: set progressBars to correct percentage upon load
 }
 else {
-  regions = JSON.parse($.ajax({
-    type: 'GET',
-    url: 'region_templates.json',
-    dataType: 'json',
-    success: function() {},
-    data: {},
-    async: false}));
+  // regions = JSON.parse($.ajax({
+  //   type: 'GET',
+  //   url: 'region_templates.json',
+  //   dataType: 'json',
+  //   success: function() {},
+  //   data: {},
+  //   async: false}));
+  $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; })
 }
 //Upgrades/Items/Currencies
 // const upgradesList = [{
