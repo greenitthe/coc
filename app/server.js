@@ -397,8 +397,8 @@ io.on('connection', function (socket) {
               return cB;
             }
             let newC = filteredCurrs[0];
-            let combinedAmounts = newC.amount + cB.amount;
-            let newAmount = combinedAmounts > cB.maxAmount ? cB.maxAmount : combinedAmounts;
+            //let combinedAmounts = newC.amount + cB.amount;
+            let newAmount = newC.amount > cB.maxAmount ? cB.maxAmount : newC.amount;
             cB.amount = newAmount;
             return cB;
           });
@@ -414,7 +414,7 @@ io.on('connection', function (socket) {
           // });
           params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newArr}], function(err, object) {if(err){console.log(err);}else{console.log(object)}});
         });
-        emitUserUpdate("user_" + username, username);
+        setTimeout(emitUserUpdate, 2000, "user_" + username, username);
         // const userSchema = new Schema({
         //   username: String,
         //   pass: String,

@@ -16,7 +16,6 @@ function updateCDataCurrency(targetCurrency, incrementAmount = 1) {
   if (reference.amount + incrementAmount <= reference.maxAmount) {
     characterData.currencies[referenceIndex].amount+=incrementAmount;
   }
-  saveGame();
   sendAction("currencyUpdate", {currencies: characterData.currencies});
 }
 
@@ -39,6 +38,7 @@ function buttonUsed(type, name) {
       setProgressBar(pBarHolder, targetFeature.actualPercent, cProg, pReq - cProg, pReq, 100);
       break;
   }
+  saveGame();
   refreshRegion();
 }
 

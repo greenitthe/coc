@@ -41,6 +41,7 @@ var characterData = {
 if (loadedCData !== undefined) {
   console.log("Character Data loaded from cookies.");
   characterData = JSON.parse(loadedCData);
+  console.log(characterData.currencies)
 }
 
 /*characterData {
@@ -77,11 +78,16 @@ var regions = [];
 if (loadedRegions !== undefined) {
   console.log("Regions loaded from cookies");
   regions = JSON.parse(loadedRegions);
+  //TODO: set progressBars to correct percentage upon load
 }
 else {
-  regions.push(new Region("Singularity", [
-    {name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", buttonText: "Condense!", progressRequired: 20, currentProgress: 0, actualPercent: 0, currencyTarget: "Energy", currencyAmount: 1}
-  ]));
+  regions = JSON.parse($.ajax({
+    type: 'GET',
+    url: 'region_templates.json',
+    dataType: 'json',
+    success: function() {},
+    data: {},
+    async: false}));
 }
 //Upgrades/Items/Currencies
 // const upgradesList = [{

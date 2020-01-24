@@ -29,6 +29,7 @@ function updateCharacterData(data) {
   characterData.upgrades=data.upgradesOwned;
   characterData.items=data.itemInventory;
   characterData.currencies=data.currencyBags;
+  saveGame();
   refreshRegionAndUnblock();
 }
 

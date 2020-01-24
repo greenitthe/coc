@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Singularity",
+    "features": [
+      {
+        "name": "condenser",
+        "displayName": "Energy Condenser",
+        "cardType": "progressBar",
+        "description": "Condenses Energy with some effort.",
+        "buttonText": "Condense!",
+        "progressRequired": 20,
+        "currentProgress": 0,
+        "actualPercent": 0,
+        "currencyTarget": "Energy",
+        "currencyAmount": 1
+      }
+    ]
+  }
+]
