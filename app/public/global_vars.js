@@ -32,11 +32,16 @@ var clickCounter = 0;
 var timeLastSentClicks = new Date();
 
 //Character Data
+let loadedCData = Cookies.get("cData");
 var characterData = {
   upgrades: [],
   items: [],
   currencies: []
 };
+if (loadedCData !== undefined) {
+  console.log("Character Data loaded from cookies.");
+  characterData = JSON.parse(loadedCData);
+}
 
 /*characterData {
  * * upgrades: [{
@@ -54,21 +59,30 @@ var characterData = {
  * * }]
 */
 
+//Save Game
+function saveGame() {
+  Cookies.set("cData", JSON.stringify(characterData));
+  Cookies.set("regions", JSON.stringify(regions));
+}
+
 //Regions
 function Region(name, features) {
   this.name = name;
   this.features = features;
 }
+
+//Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
+let loadedRegions = Cookies.get("regions");
 var regions = [];
-regions.push(new Region("Singularity", [
-  {name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", buttonText: "Condense!", progressRequired: 20, currentProgress: 0, actualPercent: 0, onCompletion: function() {
-      let reference = characterData.currencies.filter(item => item.name = "Energy")[0];
-      if (reference.amount + 1 <= reference.maxAmount)
-      reference.amount++;
-    }
-  }
-]));
-console.log(regions)
+if (loadedRegions !== undefined) {
+  console.log("Regions loaded from cookies");
+  regions = JSON.parse(loadedRegions);
+}
+else {
+  regions.push(new Region("Singularity", [
+    {name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", buttonText: "Condense!", progressRequired: 20, currentProgress: 0, actualPercent: 0, currencyTarget: "Energy", currencyAmount: 1}
+  ]));
+}
 //Upgrades/Items/Currencies
 // const upgradesList = [{
 //   name: ,

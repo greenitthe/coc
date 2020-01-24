@@ -372,7 +372,7 @@ io.on('connection', function (socket) {
       console.log("-----");
       console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == 600 ? " Rate Limiting to 600." : ""));
     }
-    mTools.updateObject(GlobalStats, {name: "Clicks"}, [{ $inc: {value: clicks}}], function(err, object) {return;});
+    mTools.updateObject(GlobalStats, {name: "Clicks"}, [{ '$inc': {'value': clicks}}], function(err, object) {return;});
     socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
   });
   
@@ -385,8 +385,55 @@ io.on('connection', function (socket) {
     }
     //Based on the name of the action, select the appropriate response
     switch(data.name) {
-      case "":
-        
+      case "currencyUpdate":
+        //data.args.currencies;
+        //name
+        //amount
+        //maxAmount
+        mTools.getObject(User, {username: username}, {currencies: data.args.currencies, mTools: mTools, User: User, username: username}, function(arrRes, params) {
+          let newArr = arrRes[0].currencyBags.map(function (cB) {
+            let filteredCurrs = params.currencies.filter(curr => curr.name == cB.name);
+            if (filteredCurrs.length == 0) {
+              return cB;
+            }
+            let newC = filteredCurrs[0];
+            let combinedAmounts = newC.amount + cB.amount;
+            let newAmount = combinedAmounts > cB.maxAmount ? cB.maxAmount : combinedAmounts;
+            cB.amount = newAmount;
+            return cB;
+          });
+          // params.currencies.forEach(function(item) {
+          //   let thisBag = arrRes[0].currencyBags.filter(curr => curr.name == item.name)[0];
+          //   let curAmount = thisBag.amount;
+          //   let maxAmount = thisBag.maxAmount;
+          //   let newAmount = item.amount > maxAmount ? curAmount + maxAmount : curAmount + item.amount;
+          //   let pushValue = { '$set':
+          //     {'currencyBags.$.amount': newAmount}
+          //   };
+          //   updateKeyValues.push(pushValue);
+          // });
+          params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newArr}], function(err, object) {if(err){console.log(err);}else{console.log(object)}});
+        });
+        emitUserUpdate("user_" + username, username);
+        // const userSchema = new Schema({
+        //   username: String,
+        //   pass: String,
+        //   schemaVersion: String,
+        //   lastSeen: Date,
+        //   upgradesOwned: [{
+        //     name: String,
+        //     level: Number
+        //   }],
+        //   itemInventory: [{
+        //     name: String,
+        //     amount: Number
+        //   }],
+        //   currencyBags: [{
+        //     name: String,
+        //     amount: Number,
+        //     maxAmount: Number //Upgraded by upgrades and items, but the max is ultimately server side to reduce cheating
+        //   }]
+        // });
         break;
     }
   });

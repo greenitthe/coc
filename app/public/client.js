@@ -10,7 +10,18 @@ function incrementClicks() {
 //   sendAction("checkTimer", {regionName: activeRegion, timerName: name});
 // }
 
+function updateCDataCurrency(targetCurrency, incrementAmount = 1) {
+  let referenceIndex = characterData.currencies.findIndex((item => item.name == targetCurrency));
+  let reference = characterData.currencies[referenceIndex];
+  if (reference.amount + incrementAmount <= reference.maxAmount) {
+    characterData.currencies[referenceIndex].amount+=incrementAmount;
+  }
+  saveGame();
+  sendAction("currencyUpdate", {currencies: characterData.currencies});
+}
+
 function buttonUsed(type, name) {
+  incrementClicks();
   let currentRegion = regions.filter(aRegion => aRegion.name == activeRegion)[0];
   let targetFeature = currentRegion.features.filter(aFeature => aFeature.name == name && aFeature.cardType == type)[0];
   switch (type) {
@@ -20,7 +31,7 @@ function buttonUsed(type, name) {
       let pReq = targetFeature.progressRequired;
       if (cProg >= pReq - 0.1) {
         targetFeature.currentProgress = cProg = 0;
-        targetFeature.onCompletion();
+        updateCDataCurrency(targetFeature.currencyTarget, targetFeature.currencyAmount);
       }
       let percentPerProgress = (1/pReq)*100;
       targetFeature.actualPercent = percentPerProgress * cProg;

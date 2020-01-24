@@ -136,9 +136,12 @@ function parseUserForm() {
 
 function logoutUser() {
   console.log("User requested logout. Deleting cookies.");
+  //TODO: emit final update of all relevant data
   socket.emit('logoutUser', { username: Cookies.get('username')});
   Cookies.remove('username');
   Cookies.remove('cloudsavePass');
+  Cookies.remove('cData');
+  Cookies.remove('regions');
   // createAnnouncement("ann_usernameNotification", "Successfully Logged Out.", false);
   setTimeout(function() {showUsername()}, 1000);
 }
