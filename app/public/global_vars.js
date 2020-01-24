@@ -60,7 +60,14 @@ function Region(name, features) {
   this.features = features;
 }
 var regions = [];
-regions.push(new Region("Singularity", [{name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", progressRequired: 20, currentProgress: 0, actualPercent: 0, onCompletion: function() { characterData.currencies.filter(item => item.name = "Energy")[0].amount++; } }]));
+regions.push(new Region("Singularity", [
+  {name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", buttonText: "Condense!", progressRequired: 20, currentProgress: 0, actualPercent: 0, onCompletion: function() {
+      let reference = characterData.currencies.filter(item => item.name = "Energy")[0];
+      if (reference.amount + 1 <= reference.maxAmount)
+      reference.amount++;
+    }
+  }
+]));
 console.log(regions)
 //Upgrades/Items/Currencies
 // const upgradesList = [{

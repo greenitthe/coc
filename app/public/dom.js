@@ -73,7 +73,7 @@ function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, ri
     $targetProgressHolder.find(".progressBarText").show();
   }
   $targetProgressHolder.find(".progressBar").animate({width: progressBarWidth }, speed);
-  $targetProgressHolder.find(".progressRemaining").animate({width: ((100 - (progressBarWidth*100)) / 100) }, speed);
+  $targetProgressHolder.find(".progressRemaining").animate({width: ((100 - (progressBarWidth*100)) / 100) }, 6);
   $targetProgressHolder.find(".progressBarText").html(pBarLabel);
   $targetProgressHolder.find(".progressRemainingText").html(rBarLabel);
   $targetProgressHolder.find(".progressRightLabel").html(rightLabel);
@@ -174,20 +174,19 @@ function refreshRegionFeatures() {
     switch(item.cardType) {
       case "progressBar":
         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>BUTTONTEXT</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
-        if (item.actualPercent != getProgressBarPercent($("#" + item.name + " .progressWrapper"))) {
-          console.log("not the same")
-          
-        }
         break;
     }
-    if (targetLI.length>0) {
-      if (content != targetLI.html()) {
-        targetLI.html(content);
-      }
-    }
-    else {
+    if (targetLI.length<=0) {
       featuresList.append(content);
     }
+    // if (targetLI.length>0) {
+    //   if (content != targetLI.html()) {
+    //     targetLI.html(content);
+    //   }
+    // }
+    // else {
+    //   featuresList.append(content);
+    // }
   });
 }
 

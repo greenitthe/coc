@@ -15,24 +15,20 @@ function buttonUsed(type, name) {
   let targetFeature = currentRegion.features.filter(aFeature => aFeature.name == name && aFeature.cardType == type)[0];
   switch (type) {
     case "progressBar":
-      // regions.push(new Region("Singularity", [{name: "condenser", cardType: "progressBar", displayName: "Energy Condenser", description: "Condenses Energy with some effort.", progressRequired: 20, currentProgress: 0, actualPercent: 0, onCompletion: function() { characterData.currencies.filter(item => item.name = "Energy")[0].amount++; } }]));
       targetFeature.currentProgress++;
       let cProg = targetFeature.currentProgress;
       let pReq = targetFeature.progressRequired;
       if (cProg >= pReq - 0.1) {
-        targetFeature.currentProgress = 0;
-        targetFeature.actualPercent = 0;
-        cProg = 0;
+        targetFeature.currentProgress = cProg = 0;
         targetFeature.onCompletion();
       }
-      else {
-        let percentPerProgress = (1/pReq)*100;
-        targetFeature.actualPercent += percentPerProgress;
-      }
-      let pBarHolder = $("#regionFeaturesList #" + name + " .progressHolder");
+      let percentPerProgress = (1/pReq)*100;
+      targetFeature.actualPercent = percentPerProgress * cProg;
+      let pBarHolder = $("#regionFeaturesList #" + name + " .progressWrapper");
       setProgressBar(pBarHolder, targetFeature.actualPercent, cProg, pReq - cProg, pReq, 100);
       break;
   }
+  refreshRegion();
 }
 
 function changeActiveRegion(targetRegion) {
