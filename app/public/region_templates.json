@@ -17,13 +17,13 @@
         "spendAmount": 0
       },
       {
-        "name": "coreUpgradeL1",
+        "name": "core",
         "displayName": "Core Level",
         "cardType": "upgradeShop",
         "description": "Upgrade your Core to unlock new features and regions.",
         "buttonText": "Upgrade",
         "upgradeTarget" : "Core",
-        "unlocked": false
+        "unlocked": true
       }
     ]
   }

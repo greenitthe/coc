@@ -1,7 +1,7 @@
 //Toggles whether looks at cookies for region information or from the blank template.
-const resetTemplates = true;
+const resetTemplates = false;
 // $('#gamePage').block({ message: "Loading assets...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
-var loadStatus = 4; //on 0 will enable game, each critical component should subtract 1
+var loadStatus = 3; //on 0 will enable game, each critical component should subtract 1
 
 //Color Stuff
 //standardColors:
@@ -83,6 +83,8 @@ var regions = [];
 if (loadedRegions !== undefined && resetTemplates === false) {
   console.log("Regions loaded from cookies");
   regions = JSON.parse(loadedRegions);
+  loadStatus--;
+  console.log("Load Status: " + loadStatus);
   //TODO: set progressBars to correct percentage upon load
 }
 else {
@@ -93,15 +95,15 @@ else {
   //   success: function() {},
   //   data: {},
   //   async: false}));
-  $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; });
+  $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });
 }
 
 var upgradeList = [];
-$.getJSON('upgrades.json', function (json) { console.log("Upgrades JSON Loaded"); upgradeList = json; loadStatus--; });
+$.getJSON('upgrades.json', function (json) { console.log("Upgrades JSON Loaded"); upgradeList = json; loadStatus--; console.log("Load Status: " + loadStatus); });
 //Upgrades/Items/Currencies
 // const upgradesList = [{
 //   name: ,
 //   maxLevel:
 // }, {
-  
+
 // }]

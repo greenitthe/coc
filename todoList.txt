@@ -1,0 +1,13 @@
+make setProgressBar have dynamic values instead of static #s:
+  socket.on('upgradeConfirmed', function (data) {
+
+make re-login respect block so it doesn't unblock early... just like a fresh page load
+
+figure out how to track upgrades applied... like core 1 upgrade max energy.
+  todo: add other cases for this or rework how it does what it does
+
+in logoutUser (sockets.js):
+  //TODO: emit final update of all relevant data
+  see other comments
+
+fix undefined username in logout sendClicks

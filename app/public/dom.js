@@ -42,7 +42,7 @@ $(document).ready(function () {
 });
 
 function updateClickCounter() {
-  let selector = $("#globalAttributes #clicks .gsPValue");
+  let selector = $("#globalAttributes #totalclicks .gsPValue");
   let newText = " (+" + clickCounter + ")";
   changeText(selector, newText);
 }
@@ -109,15 +109,15 @@ function handleGlobalStatsUpdate(data) {
   for (var i = 0; i < sortedData.length; i++) {
     let item = sortedData[i];
     let gsList = $("#globalAttributesList");
-    let targetLI = gsList.find("#" + item.name.toLowerCase());
-    if (targetLI.length == 1) {
+    let targetLI = gsList.find("#" + stripWhitespace(item.name.toLowerCase()));
+    if (targetLI.length === 1) {
       let targetSpan = $($(targetLI[0]).find(".gsValue")[0]);
       if (targetSpan.text() != item.value.toString()) {
         changeText(targetSpan, item.value.toString());
       }
     }
     else if (targetLI.length === 0) {
-      gsList.append('<li id="' + item.name.toLowerCase() + '"><strong class="gsName">' + item.name + '</strong><div><span class="gsValue">' + item.value + '</span><span class="gsPValue"></span></div></li>');
+      gsList.append('<li id="' + stripWhitespace(item.name.toLowerCase()) + '"><strong class="gsName">' + item.name + '</strong><div><span class="gsValue">' + item.value + '</span><span class="gsPValue"></span></div></li>');
       console.log("In handleGlobalStatsUpdate, targetLI not found, creating!");
     }
     else {
@@ -172,23 +172,23 @@ function refreshRegionAttributes() {
 }
 
 function refreshRegionItems() {
-  
+
 }
 
 function refreshRegionUpgrades() {
-  
+
   //This may be wrapped into features entirely instead
-  
-  
+
+
   // var currentRegion = getCurrentRegion();
   // var uList = $("#regionUpgradesList");
-  
+
   // currentRegion.features.forEach(function (item) {
   //   var content = "";
   //   var targetLI = uList.find("#" + item.name);
   //   switch(item.cardType);
   // });
-  
+
     // var currentRegion = regoins.filter(aRegion => aRegion.a)
     // characterData.upgrades.forEach(function(item)) {
     //   let uList = $("#regionUpgradesList");
@@ -204,22 +204,35 @@ function refreshRegionFeatures() {
   var currentRegion = getCurrentRegion();
   var featuresList = $("#regionFeaturesList");
   currentRegion.features.forEach(function (item) {
+    //console.log($("#regionFeaturesList #" + item.name + " .progressWrapper"))
     var content = "";
     var targetLI = featuresList.find("#" + item.name);
+    let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel;
     switch(item.cardType) {
       case "progressBar":
         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
+        pBarTarget = $("#regionFeaturesList #" + item.name + " .progressWrapper");
+        pBarPercent = item.actualPercent;
+        pBarLeftLabel = item.currentProgress;
+        pBarRightLabel = (item.progressRequired - item.currentProgress);
+        pBarMaxLabel = item.progressRequired;
         break;
-      
+
       case "upgradeShop":
         let ownedUpgradeObject = characterData.upgrades.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
         let masterUpgradeObject = upgradeList.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('upgradeShop', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + ownedUpgradeObject.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (masterUpgradeObject.maxLevel - ownedUpgradeObject.level) + "</span></div></div><div class='progressRightLabel'><span>" + masterUpgradeObject.maxLevel + "</span></div></div></li>";
+        pBarTarget = $("#regionFeaturesList #" + item.name + " .progressWrapper");
+        pBarPercent = (ownedUpgradeObject.level / masterUpgradeObject.maxLevel) * 100;
+        pBarLeftLabel = ownedUpgradeObject.level;
+        pBarRightLabel = (masterUpgradeObject.maxLevel - ownedUpgradeObject.level);
+        pBarMaxLabel = masterUpgradeObject.maxLevel;
         break;
     }
     if (targetLI.length<=0) {
       featuresList.append(content);
     }
+    setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel, 0);
     // if (targetLI.length>0) {
     //   if (content != targetLI.html()) {
     //     targetLI.html(content);
@@ -236,8 +249,8 @@ function getCurrentRegion() {
 }
 
 function refreshRegion() {
-  console.log("Refreshing Region from Character Data");
-  
+  //console.log("Refreshing Region from Character Data");
+
   refreshRegionAttributes();
   refreshRegionItems();
   refreshRegionUpgrades();
@@ -322,39 +335,39 @@ function msToTime(s) {
 //   target.append(items.join(''));
 //   let progressBarArray = newLiArray.filter(x => x.cardType === "progressBar");
 //   $.each(progressBarArray, function(index, item) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //     //TOP TODO: make it so this and the other stuff on the page doesnt get a full update each time again... yeesh this is a pain but atlast its updating
 //     //GET THE FLASHING EFFECT WORKING TOO WHEN STUFF UPDATES AGAIN! DUNNO WHY THAT BROKE
 //     //ALSO on mobile the currencies won't wrap if overflow... probably cause of set height... DANGIT
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //     if (item.name === "lifting") {
 //       setProgressBar($("#" + item.name + " .progressWrapper"), (item.metadata.setProgress / item.metadata.repsPerSet) * 100, item.metadata.setProgress, item.metadata.repsPerSet - item.metadata.setProgress, item.metadata.repsPerSet);
 //     }
@@ -378,9 +391,9 @@ function msToTime(s) {
 // */
 // function updateAllLITextUnderULByID(ulID, newTextArr) {
 //   /*
-  
+
 //   Todo: Have this check whether the text is the same, if so don't bother updating the DOM
-  
+
 //   */
 //   $.each(newTextArr, function(index, element) {
 //     if (element) {
@@ -436,11 +449,11 @@ function msToTime(s) {
 //     case "Features-Full":
 //       updateIncrementerListByID(givenID, args.newLIArray);
 //       break;
-    
+
 //     case "Attributes-Full":
 //       updateCurrencyListByID(givenID, args.newLIArray);
 //       break;
-      
+
 //     // Deprecated
 //     // case "Text-Only":
 //     //   updateAllLITextUnderULByID(givenID, args.textArr);

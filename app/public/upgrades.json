@@ -24,6 +24,18 @@
         "criteriaTypes": ["MaxCurrency", "MaxCurrency"],
         "criteriaAmounts": [20, 1]
       }
+    ],
+    "rewardStructure": [
+      {
+        "targetNames": ["Energy"],
+        "targetTypes": ["MaxCurrency"],
+        "targetAmounts": [100]
+      },
+      {
+        "targetNames": [""],
+        "targetTypes": [""],
+        "targetAmounts": [0]
+      }
     ]
   }
 ]

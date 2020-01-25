@@ -46,7 +46,10 @@ function buttonUsed(type, name) {
         let cName = mUO.costStructure[oUO.level].currencyNames[i];
         let targetCharCurr = characterData.currencies.filter(curr => curr.name == cName)[0];
         let currencyAmount = mUO.costStructure[oUO.level].currencyAmounts[i];
-        ((targetCharCurr.maxAmount >= currencyAmount) && (targetCharCurr.amount >= currencyAmount)) ? "" : canAfford = false;
+        if (targetCharCurr === undefined) { console.log ("Undiscovered currency needed for that purchase!"); }
+        if ((targetCharCurr.maxAmount >= currencyAmount) && (targetCharCurr.amount >= currencyAmount)) {
+          //cool can afford
+        } else { canAfford = false; }
       }
       console.log("canAfford: " + canAfford);
       if (canAfford) {
@@ -59,7 +62,7 @@ function buttonUsed(type, name) {
 }
 
 function lookupAndSpendCurrency(spendTarget, spendAmount) {
-  
+
 }
 
 function changeActiveRegion(targetRegion) {
@@ -76,11 +79,11 @@ function changeActiveRegion(targetRegion) {
 
 function queueAfterLoadStatus(functionToRun, argumentsToPass) {
   if (loadStatus === 0) {
-    console.log("Load Status not Finished");
+    console.log("Fully loaded... Unlocking region.");
     functionToRun(argumentsToPass);
   }
   else {
-    console.log("Fully loaded... Unlocking region.");
+    console.log("Load Status not Finished");
     setTimeout(queueAfterLoadStatus, 100, functionToRun, argumentsToPass);
   }
 }

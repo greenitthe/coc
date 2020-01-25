@@ -176,6 +176,8 @@ function BlankGlobalStat(name, sortOrder, schemaVersion, initialValue, visibilit
   this.visible = visibility;
 }
 
+var upgradesList = [];
+
 //Using Pug as templating engine
 app.set('view engine', 'pug');
 
@@ -203,22 +205,23 @@ function initializeDatabase() {
     console.log("[Notice] Users collection not dropped.");
   }
   mTools.dropCollection(Upgrade, "Upgrades", {}, function(cbParams) { console.log("[Info] Collection Upgrades dropped!"); });
-  
+
   //Load GlobalStats Objects
   let newGSArr = [];
   newGSArr.push(new BlankGlobalStat("Total Clicks", 1, "v0.01", 0, true));
   newGSArr.push(new BlankGlobalStat("Global Level", 0, "v0.01", 0, true));
   newGSArr.push(new BlankGlobalStat("Ascensions", 2, "v0.01", 0, false));
   batchLoadDBObjects(GlobalStats, newGSArr);
-  
+
   //Load Upgrades
-  let upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
-  batchLoadDBObjects(Upgrade, upgradesArray);
-  
+  //var upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
+  //batchLoadDBObjects(Upgrade, upgradesArray);
+
   startListening();
 }
 
 function startListening() {
+  upgradesList = jsonfile.readFileSync('./public/upgrades.json');
   //Start server listening for web requests
   console.log("[Notice] Server opening on port " + servPort);
   server.listen(servPort);
@@ -283,7 +286,7 @@ function emitUserUpdate(roomName, username, emissionName = "actionResponse") {
 io.on('connection', function (socket) {
   //On new connection, emit an 'establish' packet to client with server port to make sure connection is correct
   socket.emit('establish', { port: ":" + servPort });
-  
+
   //After client recieves establish, it will send 'acknowledge' with confirmation of connection establishment on expected port, printing a warning if nonstandard, then sending 'receipt' confirmation based on that
   socket.on('acknowledge', function (data) {
     if (data.confirmation) {
@@ -297,7 +300,7 @@ io.on('connection', function (socket) {
       socket.emit('receipt', { confirmation: false });
     }
   });
-  
+
   //When client attempts to 'logout' they will be gracefully removed from the io room. If all instances of that user are removed from the room the room closes.
   socket.on('logoutUser', function (data) {
     try {
@@ -313,7 +316,7 @@ io.on('connection', function (socket) {
       console.log(err)
     }
   });
-  
+
   // When client attempts to 'login' they will send credentials which will be checked against existing users. Will notify user if wrong password provided for existing account. If no account found, user will automatically have an account generated.
   socket.on('verifyLogin', function (data) {
     console.log("-----");
@@ -348,7 +351,7 @@ io.on('connection', function (socket) {
           console.log("[Info] Number of users in this account's room now: " + (Object.keys(cbParams.io.sockets.adapter.rooms[newRoomName].sockets).length)); //lists all users in room
           console.log("[Info] Number of unique accounts connected now: " + (Object.keys(cbParams.io.sockets.adapter.rooms).length)); //lists all rooms
           console.log("[Notice] Above numbers may be +- 1 due to time delay in socket.io flushing user/room changes");
-          
+
         }
         else {
           console.log("[Info] Invalid password for user '" + cbParams.username + "'. Rejecting login.")
@@ -357,7 +360,7 @@ io.on('connection', function (socket) {
       }
     });
   });
-  
+
   socket.on('clickUpdate', function (data) {
     //TODO: If last received clickUpdate from user within 50 seconds, ignore request
     try {
@@ -372,10 +375,10 @@ io.on('connection', function (socket) {
       console.log("-----");
       console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == 600 ? " Rate Limiting to 600." : ""));
     }
-    mTools.updateObject(GlobalStats, {name: "Clicks"}, [{ '$inc': {'value': clicks}}], function(err, object) {return;});
+    mTools.updateObject(GlobalStats, {name: "Total Clicks"}, [{ '$inc': {'value': clicks}}], function(err, object) {return;});
     socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
   });
-  
+
   socket.on('attemptAction', function (data) {
     //Pull username out of the room name the socket is in
     var username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
@@ -404,22 +407,80 @@ io.on('connection', function (socket) {
         break;
       case "upgradePurchase":
         let targetUpgrade = data.args.upgradeName;
-        console.log(targetUpgrade)
-        
-        
-        
-        
-        
-        
-        //TODO: Finish writing this
-        
-        
-        
-        
-        
-        
-        
-        
+        let foundUpgrade = upgradesList.filter(upgrade => upgrade.name == targetUpgrade)[0];
+        if (foundUpgrade === undefined) {
+          //TODO: complain to client or at least in the server log
+        }
+        else {
+          mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, foundUpgrade: foundUpgrade}, function(arrRes, params) {
+            let foundUpgrade = params.foundUpgrade;
+            let upgradeOwned = arrRes[0].upgradesOwned.filter(upgrade => upgrade.name == foundUpgrade.name)[0];
+            if (upgradeOwned === undefined) {
+              //UPGRADE UNOWNED, CHECK FOR VALIDITY THEN ADD TO USER LIST
+            }
+            else {
+              let unlocked = true;
+              let unlockStructure = foundUpgrade.unlockStructure[upgradeOwned.level];
+              for (var i = 0; i < unlockStructure.criteriaNames.length; i++) {
+                let criteriaResponseValue;
+                switch(unlockStructure.criteriaTypes[i]) {
+                  case "MaxCurrency":
+                    let criteriaResponseValue = arrRes[0].currencyBags.filter(curr => curr.name == unlockStructure.criteriaNames[i])[0].maxAmount;
+                    break;
+                }
+                if (criteriaResponseValue < unlockStructure.criteriaAmounts[i]) {
+                  unlocked = false;
+                }
+              }
+              //console.log("Unlocked?: " + unlocked);
+              if (unlocked) { //then check if upgrade is possible
+                let costStructure = foundUpgrade.costStructure[upgradeOwned.level];
+                let newCBArray = arrRes[0].currencyBags;
+                let affordable = true;
+                for (var i = 0; i < costStructure.currencyNames.length; i++) {
+                  //todo: wrap all this junk in try...catches to not crash when users send nonsense
+                  let targetCurrency = newCBArray.filter(curr => curr.name == costStructure.currencyNames[i])[0];
+                  if (targetCurrency.amount >= costStructure.currencyAmounts[i]) {
+                    targetCurrency.amount = targetCurrency.amount - costStructure.currencyAmounts[i];
+                  }
+                  else {
+                    affordable = false;
+                  }
+                }
+                if (affordable) {
+                  let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
+                    let newItem = item;
+                    newItem.level = item.name == foundUpgrade.name ? item.level + 1 : item.level;
+                    return newItem;
+                  });
+                   // newCBArray[0].amount = 5;
+                   // newUpgradesArray[0].level = 0;
+
+                  //Now handle adding the benefits of the upgrade:
+                  let rewardStructure = foundUpgrade.rewardStructure[upgradeOwned.level-1];
+                  for (var i = 0; i < rewardStructure.targetNames.length; i++) {
+                    switch (rewardStructure.targetTypes[i]) {
+                      case "MaxCurrency":
+                        let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
+                        rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
+                        break;
+                      //TODO: add other cases
+                    }
+                  }
+
+                  params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
+                    function(err, object) {
+                      if(err){console.log(err);}
+                      //else{console.log(object)}
+                      this.emitUserUpdate("user_" + this.username, this.username);
+                    }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+                  params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundUpgrade.name});
+                  // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
+                }
+              }
+            }
+          });
+        }
         break;
     }
   });

@@ -3,7 +3,7 @@ function updateCharacterData(data) {
   characterData.items=data.itemInventory;
   characterData.currencies=data.currencyBags;
   saveGame();
-  refreshRegionAndUnblock();
+  refreshRegion();
 }
 
 function attemptLogin(username, pass) {
@@ -18,7 +18,7 @@ function sendAction(actionName, args) {
 function checkLoginCookie() {
   const username = Cookies.get('username');
   const cloudsavePass = Cookies.get('cloudsavePass');
-  
+
   if (username && cloudsavePass) {
     console.log("Login cookie found, verifying with server.");
     attemptLogin(username, cloudsavePass);
@@ -32,12 +32,12 @@ function checkLoginCookie() {
 
 //Parse Username Box
 function parseUserForm() {
-  $('#gamePage').unblock();
+  // $('#gamePage').unblock();
   // hideAnnouncement("ann_usernameNotification");
   console.log("User Form submitted. Attempting to parse.");
   const usernameInput = $("#usernameField").val();
   const passInput = $("#passwordField").val();
-  
+
   //Check for the cases where username and/or password are blank and catch them
   if (usernameInput === "" || usernameInput.length <= 0) {
     $("#usernameField").focus();
@@ -52,7 +52,7 @@ function parseUserForm() {
     // createAnnouncement("ann_usernameNotification", "Password is required.", false);
     return;
   }
-  
+
   //Past the above checks, input assumed good.
   console.log("User form meets parse requirements. Attempting login with server.");
   $("#usernameField").val("");
@@ -63,12 +63,19 @@ function parseUserForm() {
 
 function logoutUser() {
   console.log("User requested logout. Deleting cookies.");
-  //TODO: emit final update of all relevant data
   socket.emit('logoutUser', { username: Cookies.get('username')});
   Cookies.remove('username');
   Cookies.remove('cloudsavePass');
   Cookies.remove('cData');
   Cookies.remove('regions');
+  loadStatus = 2;
+  activeRegion = "Singularity";
+  characterData = { upgrades: [], items: [], currencies: [] };
+  //TODO: Get these to work as intended
+  // loadedRegions = undefined;
+  regions = $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });;
+  console.log("Sending clicks update: " + clickCounter);
+  socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
   // createAnnouncement("ann_usernameNotification", "Successfully Logged Out.", false);
   setTimeout(function() {showUsername()}, 1000);
 }
@@ -77,9 +84,11 @@ function checkSendClicks() {
   let newDate = new Date();
   console.log("Checking if should send clicks");
   if (newDate - timeLastSentClicks > 60000) {
-    console.log("Sending clicks update: " + clickCounter);
-    socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
-    timeLastSentClicks = newDate;
+    if (clickCounter > 0) {
+      console.log("Sending clicks update: " + clickCounter);
+      socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
+    }
+    timeLastSentClicks = newDate + 30000;
   }
   else {
     console.log("Time till next click update sent: " + ((60000-(newDate - timeLastSentClicks))/1000));
@@ -89,7 +98,7 @@ function checkSendClicks() {
 //Socket Stuff
 function connectSocket() {
   socket = io.connect('http://brct.io' + servPort); //the socket communicated on
-  
+
   socket.on('establish', function (data) {
     if (data.port == servPort) {
       console.log("Establishing packet received, port agreement verified, sending acknowledgement...");
@@ -103,7 +112,7 @@ function connectSocket() {
       socket.emit('acknowledge', { confirmation: false });
     }
   });
-  
+
   socket.on('receipt', function (data) {
     if (data.confirmation) {
       console.log("Connection receipt confirmed by server.");
@@ -113,14 +122,19 @@ function connectSocket() {
       console.log("Connection receipt unconfirmed by server.");
     }
   });
-  
+
   //gameData
   socket.on('actionResponse', function (data) {
     console.log("Received action response");
-    console.log(data);
+    //console.log(data);
     updateCharacterData(data);
   });
-  
+
+  socket.on('upgradeConfirmed', function (data) {
+    console.log("Upgrade Confirmed for " + data.upgradeName);
+    setProgressBar($("#regionFeaturesList #" + data.upgradeName.toLowerCase() + " .progressWrapper"), 50, 1, 2, 2, 100);
+  });
+
   // //Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
   // socket.on('actionReply', function (data) {
   //   $('#gamePage').unblock();
@@ -128,20 +142,20 @@ function connectSocket() {
   //     data.func(data.args);
   //   }
   // });
-  
+
   socket.on('GlobalStatsUpdate', function (data) {
-    // console.log("Global Stats Update Received:");
+    //console.log("Global Stats Update Received:");
     // console.log(data.data);
     handleGlobalStatsUpdate(data.data);
   });
-  
+
   socket.on('loginFailure', function (data) {
     console.log("Login not verified. Reason given: '" + data.message + "' Displaying login box.");
     Cookies.remove('username');
     Cookies.remove('cloudsavePass');
     showUsername();
   });
-  
+
   socket.on('loginSuccess', function (data) {
     console.log("Login verified! Displaying user info.");
     console.log(data);
@@ -151,19 +165,18 @@ function connectSocket() {
     updateCharacterData(data);
     showUserInfo();
     loadStatus--;
+    console.log("Load Status: " + loadStatus);
   });
-  
+
   socket.on('clicksConfirmed', function (data) {
     console.log(data.message);
     clickCounter = 0;
     updateClickCounter();
   });
-  
+
   //Event Detection
   $("#login").click(parseUserForm);
   $("#logout").click(logoutUser);
-  
-  loadStatus--;
 }
 
 
@@ -222,7 +235,7 @@ connectSocket();
 //           return;
 //         }
 //       });
-    
+
 //     case "feature":
 //       return targetArray.map(function(element, index, arr) {
 //         if (element.visible) {
