@@ -1,2 +1,4 @@
 id|name|displayName|region|sortOrder|description
 -1|gClicks|Global Clicks|global|0|Total number of clicks accumulated by all users.
+-2|gLevel|Global Level|global|1|Global level based on accumulated global xp.
+-3|gAscensions|Global Ascensions|global|2|Global ascensions stat.

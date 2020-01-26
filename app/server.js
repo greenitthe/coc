@@ -16,9 +16,10 @@ const mTools = require('./mongooseTools.js');
 const jsonfile = require('jsonfile');
 const csvParse = require('csv-parse');
 const fs = require('fs');
-const csvParser = csvParse({delimiter: '|'}, function(err, data) {
-  console.log(data);
-});
+
+var gAttrs = [];
+var attrs = [];
+var finishedLoadingData = 2; //decrement upon loading each csv/json. at 0 is finished
 
 //Helper function for logging primarily objects or large arrays
 function dataLog(data) {
@@ -124,23 +125,39 @@ function initializeDatabase() {
   //var upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
   //batchLoadDBObjects(Upgrade, upgradesArray);
 
+  checkListening();
+}
+
+function checkListening() {
+  csvParse(fs.readFileSync(__dirname+'/public/csv/gAttributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
+    console.log("[Info] Loading Global Attributes CSV!");
+    gAttrs = output;
+    finishedLoadingData--;
+    console.log(gAttrs);
+  });
+  csvParse(fs.readFileSync(__dirname+'/public/csv/attributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
+    console.log("[Info] Loading Attributes CSV!");
+    attrs = output;
+    finishedLoadingData--;
+    console.log(attrs);
+  });
+
   startListening();
 }
 
 function startListening() {
-  //upgradesList = jsonfile.readFileSync('./public/upgrades.json');
-  console.log("gAttributes")
-  fs.createReadStream(__dirname+'/public/csv/gAttributes.csv').pipe(csvParser);
-  console.log("attributes")
-  fs.createReadStream(__dirname+'/public/csv/gAttributes.csv').pipe(csvParser);
-
+  if (finishedLoadingData > 0) {
+    console.log("[Info] waiting on finishedLoadingData to startListening: " + finishedLoadingData);
+    setTimeout(startListening, 100);
+    return;
+  }
   //Start server listening for web requests
   console.log("[Notice] Server opening on port " + servPort);
   server.listen(servPort);
 }
 
 //*/
-startListening();
+checkListening();
 setInterval(emitGlobalStatsToAll, updateInterval);
 /*/
 //*
@@ -154,7 +171,7 @@ prompt.ask(function(answer) {
     console.log("[Notice] Loading Existing Database...");
   }
   //Send updates to all connected at given interval (default 10/s)
-  startListening();
+  checkListening();
   setInterval(emitGlobalStatsToAll, updateInterval);
 });//*/
 

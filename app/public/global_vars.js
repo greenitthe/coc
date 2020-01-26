@@ -24,7 +24,7 @@ var allColors = [gold, diamond_teal, white, black, blue, green, red, orange, dar
 var backgroundColor = dark_grey;
 
 //Game Stuff
-var activeRegion = Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
+var activeRegion = Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Core";
 Cookies.set("activeRegion", activeRegion);
 var fullUpdateScheduled = true;
 
@@ -39,71 +39,38 @@ var timeLastSentClicks = new Date();
 //Character Data
 let loadedCData = Cookies.get("cData");
 var characterData = {
-  upgrades: [],
-  items: [],
-  currencies: []
+  attributes: [],
+  cards: []
 };
-if (loadedCData !== undefined) {
+if (loadedCData !== undefined && resetTemplates === false) {
   console.log("Character Data loaded from cookies.");
   characterData = JSON.parse(loadedCData);
-  console.log(characterData.currencies)
+  loadStatus--;
 }
 
-/*characterData {
- * * upgrades: [{
- * * * name
- * * * level
- * * }]
- * * items: [{
- * * * name
- * * * amount
- * * }]
- * * currencies: [{
- * * * name
- * * * amount
- * * * maxAmount
- * * }]
-*/
 
 //Save Game
 function saveGame() {
   Cookies.set("cData", JSON.stringify(characterData));
-  Cookies.set("regions", JSON.stringify(regions));
 }
 
-//Regions
-function Region(name, features) {
-  this.name = name;
-  this.features = features;
-}
-
-//Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
-let loadedRegions = Cookies.get("regions");
-var regions = [];
-if (loadedRegions !== undefined && resetTemplates === false) {
-  console.log("Regions loaded from cookies");
-  regions = JSON.parse(loadedRegions);
-  loadStatus--;
-  console.log("Load Status: " + loadStatus);
-  //TODO: set progressBars to correct percentage upon load
-}
-else {
-  // regions = JSON.parse($.ajax({
-  //   type: 'GET',
-  //   url: 'region_templates.json',
-  //   dataType: 'json',
-  //   success: function() {},
-  //   data: {},
-  //   async: false}));
-  $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });
-}
-
-var upgradeList = [];
-$.getJSON('upgrades.json', function (json) { console.log("Upgrades JSON Loaded"); upgradeList = json; loadStatus--; console.log("Load Status: " + loadStatus); });
-//Upgrades/Items/Currencies
-// const upgradesList = [{
-//   name: ,
-//   maxLevel:
-// }, {
-
-// }]
+// //Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
+// let loadedRegions = Cookies.get("regions");
+// var regions = [];
+// if (loadedRegions !== undefined && resetTemplates === false) {
+//   console.log("Regions loaded from cookies");
+//   regions = JSON.parse(loadedRegions);
+//   loadStatus--;
+//   console.log("Load Status: " + loadStatus);
+//   //TODO: set progressBars to correct percentage upon load
+// }
+// else {
+//   // regions = JSON.parse($.ajax({
+//   //   type: 'GET',
+//   //   url: 'region_templates.json',
+//   //   dataType: 'json',
+//   //   success: function() {},
+//   //   data: {},
+//   //   async: false}));
+//   $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });
+// }

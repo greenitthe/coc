@@ -1,0 +1,43 @@
+[
+  {
+    "name": "core",
+    "displayName": "Core",
+    "type": "Upgradeable",
+    "levelAttribute": 10,
+    "maxLevel": 2,
+    "costStructure": [
+      {
+        "currencyNames": ["Energy"],
+        "currencyAmounts": [5]
+      },
+      {
+        "currencyNames": ["Energy", "Money"],
+        "currencyAmounts": [1000, 10]
+      }
+    ],
+    "unlockStructure": [
+      {
+        "criteriaNames": ["Energy"],
+        "criteriaTypes": ["MaxCurrency"],
+        "criteriaAmounts": [5]
+      },
+      {
+        "criteriaNames": ["Energy", "Money"],
+        "criteriaTypes": ["MaxCurrency", "MaxCurrency"],
+        "criteriaAmounts": [20, 1]
+      }
+    ],
+    "rewardStructure": [
+      {
+        "targetNames": ["Energy"],
+        "targetTypes": ["MaxCurrency"],
+        "targetAmounts": [100]
+      },
+      {
+        "targetNames": [""],
+        "targetTypes": [""],
+        "targetAmounts": [0]
+      }
+    ]
+  }
+]
