@@ -13,7 +13,12 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 const mTools = require('./mongooseTools.js');
-const jsonfile = require('jsonfile')
+const jsonfile = require('jsonfile');
+const csvParse = require('csv-parse');
+const fs = require('fs');
+const csvParser = csvParse({delimiter: '|'}, function(err, data) {
+  console.log(data);
+});
 
 //Helper function for logging primarily objects or large arrays
 function dataLog(data) {
@@ -46,137 +51,40 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   username: String,
   pass: String,
-  schemaVersion: String,
   lastSeen: Date,
-  upgradesOwned: [{
-    name: String,
+  attributes: [{
+    id: Number,
     level: Number
-  }],
-  itemInventory: [{
-    name: String,
-    amount: Number
-  }],
-  currencyBags: [{
-    name: String,
-    amount: Number,
-    maxAmount: Number //Upgraded by upgrades and items, but the max is ultimately server side to reduce cheating
   }]
 });
 
-//Contains all valid upgrades - any Upgrade action is validated against this list.
-const upgradeSchema = new Schema({
-  name: String,
-  schemaVersion: String,
-  maxLevel: Number,
-  costStructure: [{
-    currencyNames: [String],
-    currencyAmounts: [Number]
-  }],
-  unlockStructure: [{ //each object corresponds to the level #, same as costStructure so unlockStructure[1] is the unlock reqs for level 1
-    criteriaNames: [String], //the arrays of each here correspond, so cNames[1], cTypes[1], and amounts[1] line up. all array items must validate to unlock
-    criteriaTypes: [String], //Upgrade, MaxCurrency, or Item as of now - actual currency is invalid because they are ticked client-side
-    criteriaAmounts: [Number]
-  }]
-});
-
-//Contains all valid items - any Use Item or Purchase Item action is validated against this list.
-//Again, item effects are handled client side
-const itemSchema = new Schema({
-  name: String,
-  schemaVersion: String,
-  //dropRate: Number //todo: find a better way to handle dropping items randomly to players
-  stackSize: Number,
-  sellValue: Number,
-  buyValue: Number,
-  marketCurrency: String
-});
-
-//The actual effects of each upgrade or item are handled on the client side. That said, when actions are sent to the server, some validation occurs
-//Ex: If player hacks X upgrade which gives +100 gold/turn, but player doesn't have that upgrade purchased serverside, it won't go through
-//Most upgrades should be contingent upon an action occuring that is validateable
-//Thus unlocking an upgrade requires X other upgrades/items. Since items are dropped and ugprades are bought server-side, there are some hard blocks to hacking
-//Note: Currencies would still technically be hackable, as would be cooldowns, but the effort involved is larger and frankly I dont care that much
-
-//TODO: Global Effects
-
-const globalStatsSchema = new Schema({
+const globalAttributesSchema = new Schema({
+  id: Number,
   name: String,
   sortOrder: Number,
-  schemaVersion: String,
-  value: Number,
+  level: Number,
   visible: Boolean
 });
 
 
 const User = mongoose.model('Users', userSchema);
-const Upgrade = mongoose.model('Upgrades', upgradeSchema);
-const Item = mongoose.model('Items', itemSchema);
-const GlobalStats = mongoose.model('GlobalStats', globalStatsSchema);
+const GlobalAttributes = mongoose.model('GlobalAttributes', globalAttributesSchema);
 
-function BlankUser(username, pass, schemaVersion) {
+function BlankUser(username, pass) {
   this.username = username;
   this.pass = pass;
-  this.schemaVersion = schemaVersion;
   this.lastSeen = new Date();
-  this.upgradesOwned = [{
-    name: "Core",
+  this.attributes = [{
+    id: 0,
     level: 0
   }];
-  this.itemInventory = [{
-    name: "Dirt",
-    amount: "0"
-  }];
-  this.currencyBags = [{
-    name: "Energy",
-    amount: 0,
-    maxAmount: 5
-  }];
 }
 
-//todo: make into constructor
-//BlankUpgrade(name, schemaVersion, maxLevel, costStructure, unlockStructure) {
-//  name: String;
-//  schemaVersion: String;
-//  maxLevel: Number;
-//  costStructure:
-//    [{
-//     currencyNames: [String],
-//     currencyAmounts: [Number]
-//    }]
-//  unlockStructure:
-//    [{ //each object corresponds to the level #, same as costStructure so unlockStructure[1] is the unlock reqs for level 1
-//     criteriaNames: [String], //the arrays of each here correspond, so cNames[1], cTypes[1], and amounts[1] line up. all array items must validate to unlock
-//     criteriaTypes: [String], //Upgrade, MaxCurrency, or Item as of now - actual currency is invalid because they are ticked client-side
-//     criteriaAmounts: [Number]
-//    }]
-function BlankUpgrade(name, schemaVersion, maxLevel, costStructure, unlockStructure) {
-  this.name = name;
-  this.schemaVersion = schemaVersion;
-  this.maxLevel = maxLevel;
-  this.costStructure = costStructure;
-  this.unlockStructure = unlockStructure;
+function BlankGlobalAttribute(id, initialLevel, initialVisibility) {
+  this.id = id;
+  this.level = initialLevel;
+  this.visible = initialVisibility;
 }
-
-//todo: make into constructor
-const blankItem = {
-  name: "placeholder",
-  schemaVersion: "v0.01",
-  //dropRate: Number //todo: find a better way to handle dropping items randomly to players
-  stackSize: -1,
-  sellValue: -1,
-  buyValue: -1,
-  marketCurrency: "placeholder"
-};
-
-function BlankGlobalStat(name, sortOrder, schemaVersion, initialValue, visibility) {
-  this.name = name;
-  this.sortOrder = sortOrder;
-  this.schemaVersion = schemaVersion;
-  this.value = initialValue;
-  this.visible = visibility;
-}
-
-var upgradesList = [];
 
 //Using Pug as templating engine
 app.set('view engine', 'pug');
@@ -198,20 +106,20 @@ function batchLoadDBObjects(schemaObject, arrayOfSourceObjects) {
 //Should not have to be run every time - just when want a fresh DB.
 function initializeDatabase() {
   //Drop collections
-  mTools.dropCollection(GlobalStats, "GlobalStats", {}, function(cbParams) { console.log("[Info] Collection  GlobalStats dropped!"); });
+  mTools.dropCollection(GlobalAttributes, "GlobalAttributes", {}, function(cbParams) { console.log("[Info] Collection  GlobalAttributes dropped!"); });
   try {
     mTools.dropCollection(User, "Users", {}, function(cbParams) { console.log("[Info] Collection Users dropped!"); });
   } catch (e) {
     console.log("[Notice] Users collection not dropped.");
   }
-  mTools.dropCollection(Upgrade, "Upgrades", {}, function(cbParams) { console.log("[Info] Collection Upgrades dropped!"); });
 
   //Load GlobalStats Objects
   let newGSArr = [];
-  newGSArr.push(new BlankGlobalStat("Total Clicks", 1, "v0.01", 0, true));
-  newGSArr.push(new BlankGlobalStat("Global Level", 0, "v0.01", 0, true));
-  newGSArr.push(new BlankGlobalStat("Ascensions", 2, "v0.01", 0, false));
-  batchLoadDBObjects(GlobalStats, newGSArr);
+  id, initialLevel, initialVisibility
+  newGSArr.push(new BlankGlobalStat(-1, 0, true)); //Global Clicks
+  newGSArr.push(new BlankGlobalStat(-2, 0, true)); //Global Level
+  newGSArr.push(new BlankGlobalStat(-3, 0, false)); //Global Ascensions
+  batchLoadDBObjects(GlobalAttributes, newGSArr);
 
   //Load Upgrades
   //var upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
@@ -221,7 +129,12 @@ function initializeDatabase() {
 }
 
 function startListening() {
-  upgradesList = jsonfile.readFileSync('./public/upgrades.json');
+  //upgradesList = jsonfile.readFileSync('./public/upgrades.json');
+  console.log("gAttributes")
+  fs.createReadStream(__dirname+'/public/csv/gAttributes.csv').pipe(csvParser);
+  console.log("attributes")
+  fs.createReadStream(__dirname+'/public/csv/gAttributes.csv').pipe(csvParser);
+
   //Start server listening for web requests
   console.log("[Notice] Server opening on port " + servPort);
   server.listen(servPort);
@@ -242,6 +155,7 @@ prompt.ask(function(answer) {
     console.log("[Notice] Loading Existing Database...");
   }
   //Send updates to all connected at given interval (default 10/s)
+  startListening();
   setInterval(emitGlobalStatsToAll, updateInterval);
 });//*/
 
@@ -250,7 +164,7 @@ function emitGlobalStatsToAll() {
     console.log("[Verbose] Emitting Global Stats");
   }
   //function(targetObjectModel, findCriteria, keysAndValuesToUpdate, cb) {
-  mTools.getObject(GlobalStats, {schemaVersion: "v0.01"}, {emissionName: "GlobalStatsUpdate", ioObject: io}, function(resultArray, cbParams) {
+  mTools.getObject(GlobalAttributes, {}, {emissionName: "gAttrUpdate", ioObject: io}, function(resultArray, cbParams) {
     let spooledEmissionData = [];
     for(i=0;i<resultArray.length;i++) {
       if (resultArray[i].visible === true) {

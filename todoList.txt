@@ -11,3 +11,7 @@ in logoutUser (sockets.js):
   see other comments
 
 fix undefined username in logout sendClicks
+
+fix time till next click update sent: NaN (think it has to do with logging out)...
+
+Next up: Implement more currencies/upgrades/etc. and refine current systems. Also items. Lastly other regions (and tie in plinko).

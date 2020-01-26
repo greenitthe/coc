@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "csv-parse": "^4.8.5",
     "express": "^4.17.1",
     "jsonfile": "^5.0.0",
     "mongoose": "^5.7.13",
