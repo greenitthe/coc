@@ -1,7 +1,6 @@
 function updateCharacterData(data) {
-  characterData.upgrades=data.upgradesOwned;
-  characterData.items=data.itemInventory;
-  characterData.currencies=data.currencyBags;
+  characterData.attributes=data.upgradesOwned;
+  //cards should be initialized via json then updated either here or when buttons pressed...
   saveGame();
   refreshRegion();
 }
@@ -67,17 +66,16 @@ function logoutUser() {
   Cookies.remove('username');
   Cookies.remove('cloudsavePass');
   Cookies.remove('cData');
-  Cookies.remove('regions');
   loadStatus = 2;
-  activeRegion = "Singularity";
-  characterData = { upgrades: [], items: [], currencies: [] };
+  activeRegion = "Core";
+  characterData = { attributes: [], cards: [] };
   //TODO: Get these to work as intended
   // loadedRegions = undefined;
-  regions = $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });;
+  //regions = $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });;
   console.log("Sending clicks update: " + clickCounter);
   socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
   // createAnnouncement("ann_usernameNotification", "Successfully Logged Out.", false);
-  setTimeout(function() {showUsername()}, 1000);
+  setTimeout(function() {showUsername()}, 100);
 }
 
 function checkSendClicks() {
@@ -130,18 +128,6 @@ function connectSocket() {
     updateCharacterData(data);
   });
 
-  socket.on('upgradeConfirmed', function (data) {
-    console.log("Upgrade Confirmed for " + data.upgradeName);
-    setProgressBar($("#regionFeaturesList #" + data.upgradeName.toLowerCase() + " .progressWrapper"), 50, 1, 2, 2, 100);
-  });
-
-  // //Receives data object containing a function and args to pass to that function that do things based on the needsRun parameter
-  // socket.on('actionReply', function (data) {
-  //   $('#gamePage').unblock();
-  //   if (data.needsRun) {
-  //     data.func(data.args);
-  //   }
-  // });
 
   socket.on('gAttrUpdate', function (data) {
     //console.log("Global Stats Update Received:");
@@ -179,73 +165,4 @@ function connectSocket() {
   $("#logout").click(logoutUser);
 }
 
-
 connectSocket();
-// setTimeout(connectSocket, 100);
-
-
-
-//updateFull - basically gameData but forcing client to do a full update
-//TODO: Deprecate this because if DOM needs changing it should come from a specific command from the server rather than a gameData update
-//DEPRECATED
-// socket.on('updateFull', function(data) {
-//   console.log("Received updated game data and request for full update");
-//   updateFullFunction(data);
-//});
-
-// function filterUpdateDataForRegionAttributes(data) {
-//   let filtered = [];
-//   let criteriaArray = data.regions.find(x => x.name === activeRegion).relevantAttributes;
-//   for (let arr in data.attributes) {
-//     for (let filter in criteriaArray) {
-//       //TODO: Eventually remove this .visible check because server shouldn't send stuff that ain't visible!
-//       if(criteriaArray[filter].visible === true && data.attributes[arr].name === criteriaArray[filter].name) {
-//         filtered.push(data.attributes[arr]);
-//       }
-//     }
-//   }
-//   return filtered;
-// }
-
-// function updateFullFunction (data) {
-//   console.log("Conducting FULL update");
-//   $('#gamePage').unblock();
-//   var world = {};
-//   world.headerStats = data.globalStats.filter(stat => stat.visibleInHeader === true);
-//   decideUpdateMethod("globalAttributesList", "Attributes-Full", {newLIArray: world.headerStats});
-//   //now update the current region
-//   let regionData = data.regions.find(x => x.name === activeRegion);
-//   let region = {};
-//   region.name = regionData.displayName;
-//   region.attributes = filterUpdateDataForRegionAttributes(data);
-//   region.features = regionData.features;
-//   decideUpdateMethod("regionAttributesList", "Attributes-Full", {newLIArray: region.attributes});
-//   decideUpdateMethod("regionFeaturesList", "Features-Full", {newLIArray: region.features});
-//   fullUpdateScheduled = false;
-// }
-
-// function formatULTextUpdate(targetArray, contentsType) {
-//   switch(contentsType){
-//     case "attribute":
-//       return targetArray.map(function(element, index, arr) {
-//         if (element.visible) {
-//           return {headerText: element.displayName, descriptorText: element.value};
-//         }
-//         else {
-//           return;
-//         }
-//       });
-
-//     case "feature":
-//       return targetArray.map(function(element, index, arr) {
-//         if (element.visible) {
-//           if (element.mixedStorage.type == "Timed") {
-//             return {headerText: element.displayName, descriptorText: element.descriptorText, buttonText: msToTime((Date.parse(element.mixedStorage.startTime) + element.mixedStorage.duration) - new Date().getTime())};
-//           }
-//           else {
-//             return {headerText: element.displayName, descriptorText: element.descriptorText, buttonText: element.buttonText};
-//           }
-//         }
-//       });
-//   }
-// }

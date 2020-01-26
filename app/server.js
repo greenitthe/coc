@@ -55,7 +55,9 @@ const userSchema = new Schema({
   lastSeen: Date,
   attributes: [{
     id: Number,
-    level: Number
+    level: Number,
+    maxLevel: Number,
+    visible: Boolean
   }]
 });
 
@@ -77,7 +79,9 @@ function BlankUser(username, pass) {
   this.lastSeen = new Date();
   this.attributes = [{
     id: 0,
-    level: 0
+    level: 0,
+    maxLevel: -1,
+    visible: true
   }];
 }
 
