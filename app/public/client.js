@@ -67,7 +67,13 @@ function lookupAndSpendCurrency(spendTarget, spendAmount) {
 
 function changeActiveRegion(targetRegion) {
   $("#sidebar ul>li.active").removeClass("active");
-  var navLink = $("#sidebar ul li ul li .sidebarButton:contains('" + targetRegion + "')");
+  let navLink;
+  if (targetRegion === "Core") {
+    navLink = $("#coreButton");
+  }
+  else {
+    navLink = $("#sidebar ul li ul li .sidebarButton:contains('" + targetRegion + "')");
+  }
   navLink.parent("li").addClass("active");
   navLink.parent("li").parent("ul").parent("li").addClass("active");
   activeRegion = targetRegion;

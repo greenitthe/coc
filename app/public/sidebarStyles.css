@@ -74,7 +74,7 @@ body {
 }
 
 /* Add margin to the icons on the expanded version */
-#sidebar ul li .sidebarButton i {
+#sidebar ul li .sidebarButton i, #coreButton i {
   margin-right: 5px;
 }
 
@@ -100,7 +100,7 @@ a[data-toggle="collapse"] {
 }
 
 /* Make the icon take up less height */
-#sidebar ul li .sidebarButton i {
+#sidebar ul li .sidebarButton i, #coreButton i {
   line-height: 0.5em;
 }
 
@@ -126,18 +126,24 @@ a[data-toggle="collapse"] {
 }
 
 /* When unexapanded, align buttons to the left. */
-#sidebar ul li .sidebarButton {
+#sidebar ul li .sidebarButton, #coreButton {
     text-align: left;
 }
 
 /* When expanded, align buttons to the center, pad them, and make the font smaller */
-#sidebar.active ul li .sidebarButton {
+#sidebar.active ul li .sidebarButton, #sidebar.active #coreButton {
     padding: 20px 10px;
     text-align: center;
 }
 
+/* See above except setting padding smaller top and bot */
+#sidebar.active #coreButton {
+  padding-top: 10px;
+  padding-bottom: 2px;
+}
+
 /* When expanded, make the icon large and centered*/
-#sidebar.active ul li .sidebarButton i {
+#sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     display: block;
     margin: 5px 0;
 }
@@ -171,43 +177,43 @@ a[data-toggle="collapse"] {
     max-width: 15%;
     font-size: 12px;
   }
-  
+
   #sidebar.active {
     min-width: 30%;
     max-width: 30%;
     font-size: 16px;
   }
-  
+
   #sidebar .sidebar-header strong {
     font-size: 20px;
   }
-  
-  #sidebar ul li .sidebarButton i {
+
+  #sidebar ul li .sidebarButton i, #coreButton i {
     font-size: 18px;
   }
-  
-  #sidebar.active ul li .sidebarButton i {
+
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     font-size: 10px;
   }
-  
+
   #sidebar ul ul .sidebarButton {
     padding-left: 10px !important ;
   }
-  
+
   #sidebar.active ul ul .sidebarButton {
     padding-left: 30px !important;
     font-size: 12px;
   }
-  
+
   #userInfo {
     font-size: 10px;
   }
-  
+
   #logout strong {
     font-size: 10px;
     line-height: 10px;
   }
-  
+
   #logout {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -225,43 +231,43 @@ a[data-toggle="collapse"] {
     max-width: 15%;
     font-size: 14px;
   }
-  
+
   #sidebar.active {
     min-width: 22.5%;
     max-width: 22.5%;
     font-size: 16px;
   }
-  
-  #sidebar.active ul li .sidebarButton i {
+
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     font-size: 10px;
   }
-  
+
   #sidebar .sidebar-header strong {
     font-size: 25px;
   }
-  
+
   #sidebar .sidebar-header h3 {
     font-size: 28px;
   }
-  
+
   #sidebar ul ul .sidebarButton {
     padding-left: 15px !important;
   }
-  
+
   #sidebar.active ul ul .sidebarButton {
     padding-left: 30px !important;
     font-size: 15px;
   }
-  
+
   #userInfo {
     font-size: 12px;
   }
-  
+
   #logout strong {
     font-size: 12px;
     line-height: 12px;
   }
-  
+
   #logout {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -279,39 +285,39 @@ a[data-toggle="collapse"] {
     max-width: 18%;
     font-size: 18px;
   }
-  
+
   #sidebar.active {
     min-width: 13.5%;
     max-width: 13.5%;
     font-size: 17px;
   }
-  
-  #sidebar.active ul li .sidebarButton i {
+
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     font-size: 20px;
   }
-  
+
   #sidebar .sidebar-header strong {
     font-size: 40px;
   }
-  
+
   #sidebar ul ul .sidebarButton {
     padding-left: 20px !important;
   }
-  
+
   #sidebar.active ul ul .sidebarButton {
     padding-left: 20px !important;
     font-size: 16px;
   }
-  
+
   #userInfo {
     font-size: 14px;
   }
-  
+
   #logout strong {
     font-size: 14px;
     line-height: 14px;
   }
-  
+
   #logout {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -329,39 +335,39 @@ a[data-toggle="collapse"] {
     max-width: 15%;
     font-size: 20px;
   }
-  
+
   #sidebar.active {
     min-width: 8%;
     max-width: 8%;
     font-size: 16px;
   }
-  
-  #sidebar.active ul li .sidebarButton i {
+
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     font-size: 30px;
   }
-  
+
   #sidebar .sidebar-header strong {
     font-size: 30px;
   }
-  
+
   #sidebar ul ul .sidebarButton {
     padding-left: 30px !important;
   }
-  
+
   #sidebar.active ul ul .sidebarButton {
     padding-left: 10px !important;
     font-size: 18px;
   }
-  
+
   #userInfo {
     font-size: 16px;
   }
-  
+
   #logout strong {
     font-size: 16px;
     line-height: 16px;
   }
-  
+
   #logout {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -374,66 +380,66 @@ a[data-toggle="collapse"] {
 
 /** Basically just reverses the .active setting for mobile so it starts closed **/
 @media (max-width: 690px) { /* 768px the previous value */
-  #sidebar.active ul li .sidebarButton i {
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     margin-right: 5px;
   }
-  
+
   /*Toggles*/
   /* When unexpanded, hide h3 */
   #sidebar .sidebar-header h3 {
       display: none;
   }
-  
+
   /* When expanded, hide strong */
   #sidebar.active .sidebar-header strong {
       display: none;
   }
-  
+
   /* When expanded, show h3 */
   #sidebar.active .sidebar-header h3 {
       display: block;
   }
-  
+
   /* When unexpanded, show strong */
   #sidebar .sidebar-header strong {
       display: block;
   }
-  
+
   /* When exapanded, align buttons to the left. */
-  #sidebar.active ul li .sidebarButton {
+  #sidebar.active ul li .sidebarButton, #sidebar.active #coreButton {
       text-align: left;
   }
-  
-  #sidebar ul li .sidebarButton {
+
+  #sidebar ul li .sidebarButton, #coreButton {
       text-align: center;
   }
-  
+
   /* When unexpanded, align buttons to the center, pad them, and make the font smaller */
-  #sidebar ul li .sidebarButton {
+  #sidebar ul li .sidebarButton, #coreButton {
       padding: 20px 10px;
   }
-  
+
   /* When expanded, make the icon small again */
-  #sidebar.active ul li .sidebarButton i {
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     font-size: 1rem;
   }
-  
+
   /* When unexpanded, make the icon large and centered*/
-  #sidebar ul li .sidebarButton i {
+  #sidebar ul li .sidebarButton i, #coreButton i {
       margin-right:  0;
       display: block;
       margin: 0.5rem 0;
   }
-  
-  #sidebar.active ul li .sidebarButton i {
+
+  #sidebar.active ul li .sidebarButton i, #sidebar.active #coreButton i {
     display: inline-block;
   }
-  
+
   /* When unexpanded, make sure the sub-menus are correctly padded*/
   #sidebar ul ul a {
       padding: 10px !important;
   }
-  
+
   /* When unexpanded, move the arrow position to bottom/center */
   /* Changing the arrow position to bottom center position,
      translateX(50%) works with right: 50%
@@ -448,7 +454,7 @@ a[data-toggle="collapse"] {
         -ms-transform: translateX(50%);
       transform: translateX(50%);
   }
-  
+
   /* Move the arrow icon to the far right for dropdowns */
   #sidebar.active .dropdown-toggle::after {
     display: block;
@@ -478,7 +484,7 @@ p {
     color: #999;
 }
 
-.sidebarButton, .sidebarButton:hover, .sidebarButton:focus {
+.sidebarButton, .sidebarButton:hover, .sidebarButton:focus, #coreButton, #coreButton:hover, #coreButton:focus {
     color: inherit;
     text-decoration: none;
     transition: all 0.3s;
@@ -512,26 +518,26 @@ p {
     padding: 10px;
 }
 
-#sidebar ul li .sidebarButton {
+#sidebar ul li .sidebarButton, #coreButton {
     padding: 10px;
     display: block;
     width: 100%;
 }
-#sidebar ul li .sidebarButton:hover {
+#sidebar ul li .sidebarButton:hover, #coreButton:hover {
     color: #fff;
     background: #168100;
 }
 #sidebar ul li.active .sidebarButton:hover {
     background: #168100;
 }
-#sidebar ul li.active > .sidebarButton {
+#sidebar ul li.active > .sidebarButton, #sidebar ul li.active > #coreButton {
     color: #fff;
     background: #24d100;
 }
 
 button {
   border: none;
-  background-color: transperant;
+  background-color: transparent;
   outline: none;
 }
 

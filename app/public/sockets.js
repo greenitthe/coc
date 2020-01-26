@@ -143,10 +143,10 @@ function connectSocket() {
   //   }
   // });
 
-  socket.on('GlobalStatsUpdate', function (data) {
+  socket.on('gAttrUpdate', function (data) {
     //console.log("Global Stats Update Received:");
     // console.log(data.data);
-    handleGlobalStatsUpdate(data.data);
+    handleGlobalAttributesUpdate(data.data);
   });
 
   socket.on('loginFailure', function (data) {

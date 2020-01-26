@@ -8,16 +8,9 @@ nav#sidebar
         ="COC"
   ul.list-unstyled.components
     li.active
-      a#worldTopLevelMenu.sidebarButton.dropdown-toggle(href="#worldSubmenu" data-toggle="collapse" aria-expanded="false")
-        i.fa.fa-globe
-        ="World"
-      ul.collapse.list-unstyled#worldSubmenu
-        li.active
-          button.sidebarButton(onclick="changeActiveRegion('Singularity')")
-            ="Singularity"
-        li
-          button.sidebarButton(onclick="changeActiveRegion('Region Tree')")
-            ="Region Tree"
+      button#coreButton.sidebarbutton(onclick="changeActiveRegion('Core')")
+        i.fa.fa-eercast
+        ="Core"
     li.flow-bottom
       div.dropup
         ul.collapse.list-unstyled#otherSubmenu
@@ -26,7 +19,7 @@ nav#sidebar
               ="Pachinko"
           li
             a.sidebarButton.active(href="#")
-              ="Bonsai Game"
+              ="Co-Op Clicker"
         a.sidebarButton.active.dropdown-toggle(href="#otherSubmenu" data-toggle="collapse" aria-expanded="false")
           i.fa.fa-code-fork
           ="Projects"

@@ -1,4 +1,3 @@
-//Announcements
 function toggleElements(element1Name, element2Name) {
   $(element1Name).hide();
   $(element2Name).show();
@@ -95,37 +94,51 @@ function changeText(targetElement, newText){
 }
 
 /**
- * Handle Updating Global Stats given the Data from Server on GStats
- * @param {Array} data An array of objects (of the GlobalStats schema) containing the updated stat info
+ * Returns sorted array based on the sortOrder property of the objects within
+ * @param {Array} dataArr An array of objects sortOrder property
  */
-function handleGlobalStatsUpdate(data) {
-  let sortedData = data.sort(function(a,b) {
+function sortDataBySortOrder(dataArr) {
+  return dataArr.sort(function(a,b) {
     const aOrder = a.sortOrder;
     const bOrder = b.sortOrder;
-    let comparison = 0;
-    aOrder > bOrder ? comparison = 1 : comparison = -1;
-    return comparison;
+    return aOrder > bOrder ? 1 : -1;
   });
+}
+
+/**
+ * Handle Updating Global attributes given the Data from Server
+ * @param {Array} data An array of objects (of the gAttr schema) containing the updated attribute info
+ */
+function handleGlobalAttributesUpdate(data) {
+  let sortedData = sortDataBySortOrder(data);
+  updateLIsWithinListIfTextDiffers(sortedData, "#globalAttributesList", ".gsValue");
+}
+
+function updateLIsWithinListIfTextDiffers(sortedData, listTarget, valueCriteria) {
   for (var i = 0; i < sortedData.length; i++) {
     let item = sortedData[i];
-    let gsList = $("#globalAttributesList");
-    let targetLI = gsList.find("#" + stripWhitespace(item.name.toLowerCase()));
-    if (targetLI.length === 1) {
-      let targetSpan = $($(targetLI[0]).find(".gsValue")[0]);
-      if (targetSpan.text() != item.value.toString()) {
-        changeText(targetSpan, item.value.toString());
-      }
+    let list = $(listTarget);
+    let targetLI = list.find("#" + stripWhitespace(item.name.toLowerCase()));
+    determineUpdateCardTextOrMakeNew(targetLI, list, item, valueCriteria);
+  }
+}
+
+function determineUpdateCardTextOrMakeNew(targetLI, list, item, valueCriteria) {
+  if (targetLI.length === 1) {
+    let targetSpan = $($(targetLI[0]).find(valueCriteria)[0]);
+    if (targetSpan.text() != item.value.toString()) {
+      changeText(targetSpan, item.value.toString());
     }
-    else if (targetLI.length === 0) {
-      gsList.append('<li id="' + stripWhitespace(item.name.toLowerCase()) + '"><strong class="gsName">' + item.name + '</strong><div><span class="gsValue">' + item.value + '</span><span class="gsPValue"></span></div></li>');
-      console.log("In handleGlobalStatsUpdate, targetLI not found, creating!");
-    }
-    else {
-      console.log(item.name.toLowerCase());
-      console.log(item.value);
-      console.log(targetLI);
-      console.log("Warning: In handleGlobalStatsUpdate: Multiple TargetLIs found or unexpected find value.");
-    }
+  }
+  else if (targetLI.length === 0) {
+    list.append('<li id="' + stripWhitespace(item.name.toLowerCase()) + '"><strong class="gsName">' + item.name + '</strong><div><span class="gsValue">' + item.value + '</span><span class="gsPValue"></span></div></li>');
+    console.log("In handleGlobalStatsUpdate, targetLI not found, creating!");
+  }
+  else {
+    console.log(item.name.toLowerCase());
+    console.log(item.value);
+    console.log(targetLI);
+    console.log("Warning: In handleGlobalStatsUpdate: Multiple TargetLIs found or unexpected find value.");
   }
 }
 
@@ -134,115 +147,76 @@ function refreshRegionAndUnblock() {
   refreshRegion();
 }
 
-
-
-
-
-
-/** BIG TODO: ATOMIZE THESE REFRESHES INTO SMALLER FUNCTIONS SO THAT IT'S LESS EFFORT TO MAKE NEW ONES **/
-
-
-
-
-
-
-
-
-function refreshRegionAttributes() {
-  characterData.currencies.forEach(function(item) {
-    let aList = $("#regionAttributesList");
-    let targetLI = aList.find("#" + item.name.toLowerCase());
-    if (targetLI.length === 1) {
-      let targetSpan = $($(targetLI[0]).find(".aValue")[0]);
-      if (targetSpan.text() != item.amount.toString() + '/' + item.maxAmount.toString()) {
-        changeText(targetSpan, item.amount.toString() + '/' + item.maxAmount.toString());
-      }
-    }
-    else if (targetLI.length === 0) {
-      aList.append('<li id="' + item.name.toLowerCase() + '"><strong class="aName">' + item.name + '</strong><div><span class="aValue">' + item.amount + '/' + item.maxAmount + '</span><span class="aPValue"></span></div></li>');
-      console.log("In refreshRegion: In refresh attributes: targetLI not found, creating!");
-    }
-    else {
-      console.log(item.name.toLowerCase());
-      console.log(item.amount);
-      console.log(targetLI);
-      console.log("Warning: In refreshRegion: In refresh attributes: Multiple TargetLIs found or unexpected find value.");
-    }
-  });
-}
-
-function refreshRegionItems() {
-
-}
-
-function refreshRegionUpgrades() {
-
-  //This may be wrapped into features entirely instead
-
-
-  // var currentRegion = getCurrentRegion();
-  // var uList = $("#regionUpgradesList");
-
-  // currentRegion.features.forEach(function (item) {
-  //   var content = "";
-  //   var targetLI = uList.find("#" + item.name);
-  //   switch(item.cardType);
-  // });
-
-    // var currentRegion = regoins.filter(aRegion => aRegion.a)
-    // characterData.upgrades.forEach(function(item)) {
-    //   let uList = $("#regionUpgradesList");
-    //   let targetLI = uList.find("#" + item.name.toLowerCase());
-    //   if (targetLI.length === 1) {
-    //     let targetSpan = $($(targetLI[0]).find".aValue")[0]);
-    //     if (targetSpan.text() != item.)
-    //   }
-    // }
-}
-
-function refreshRegionFeatures() {
-  var currentRegion = getCurrentRegion();
-  var featuresList = $("#regionFeaturesList");
-  currentRegion.features.forEach(function (item) {
-    //console.log($("#regionFeaturesList #" + item.name + " .progressWrapper"))
-    var content = "";
-    var targetLI = featuresList.find("#" + item.name);
-    let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel;
-    switch(item.cardType) {
-      case "progressBar":
-        content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
-        pBarTarget = $("#regionFeaturesList #" + item.name + " .progressWrapper");
-        pBarPercent = item.actualPercent;
-        pBarLeftLabel = item.currentProgress;
-        pBarRightLabel = (item.progressRequired - item.currentProgress);
-        pBarMaxLabel = item.progressRequired;
-        break;
-
-      case "upgradeShop":
-        let ownedUpgradeObject = characterData.upgrades.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
-        let masterUpgradeObject = upgradeList.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
-        content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('upgradeShop', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + ownedUpgradeObject.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (masterUpgradeObject.maxLevel - ownedUpgradeObject.level) + "</span></div></div><div class='progressRightLabel'><span>" + masterUpgradeObject.maxLevel + "</span></div></div></li>";
-        pBarTarget = $("#regionFeaturesList #" + item.name + " .progressWrapper");
-        pBarPercent = (ownedUpgradeObject.level / masterUpgradeObject.maxLevel) * 100;
-        pBarLeftLabel = ownedUpgradeObject.level;
-        pBarRightLabel = (masterUpgradeObject.maxLevel - ownedUpgradeObject.level);
-        pBarMaxLabel = masterUpgradeObject.maxLevel;
-        break;
-    }
-    if (targetLI.length<=0) {
-      featuresList.append(content);
-    }
-    setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel, 0);
-    // if (targetLI.length>0) {
-    //   if (content != targetLI.html()) {
-    //     targetLI.html(content);
-    //   }
-    // }
-    // else {
-    //   featuresList.append(content);
-    // }
-  });
-}
+// function refreshRegionAttributes() {
+//   //reworking from .currencies to .attributes
+//   characterData.attributes.forEach(function(item) {
+//     let aList = $("#regionAttributesList");
+//     let targetLI = aList.find("#" + item.name.toLowerCase());
+//     determineUpdateCardTextOrMakeNew(targetLI, aList, item);
+//     if (targetLI.length === 1) {
+//       let targetSpan = $($(targetLI[0]).find(".aValue")[0]);
+//       if (targetSpan.text() != item.amount.toString() + '/' + item.maxAmount.toString()) {
+//         changeText(targetSpan, item.amount.toString() + '/' + item.maxAmount.toString());
+//       }
+//     }
+//     else if (targetLI.length === 0) {
+//       aList.append('<li id="' + item.name.toLowerCase() + '"><strong class="aName">' + item.name + '</strong><div><span class="aValue">' + item.amount + '/' + item.maxAmount + '</span><span class="aPValue"></span></div></li>');
+//       console.log("In refreshRegion: In refresh attributes: targetLI not found, creating!");
+//     }
+//     else {
+//       console.log(item.name.toLowerCase());
+//       console.log(item.amount);
+//       console.log(targetLI);
+//       console.log("Warning: In refreshRegion: In refresh attributes: Multiple TargetLIs found or unexpected find value.");
+//     }
+//   });
+// }
+//
+// function refreshRegionCards() {
+//   var currentRegion = getCurrentRegion();
+//   const featuresListSelector = "#regionFeaturesList";
+//   var featuresList = $(featuresListSelector);
+//   //reworking from .features to .cards
+//   currentRegion.cards.forEach(function (item) {
+//     //console.log($("#regionFeaturesList #" + item.name + " .progressWrapper"))
+//     var content = "";
+//     var targetLI = featuresList.find("#" + item.name);
+//     let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel;
+//     switch(item.cardType) {
+//       case "progressBar":
+//         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
+//         pBarTarget = $(featuresListSelector + " #" + item.name + " .progressWrapper");
+//         pBarPercent = item.actualPercent;
+//         pBarLeftLabel = item.currentProgress;
+//         pBarRightLabel = (item.progressRequired - item.currentProgress);
+//         pBarMaxLabel = item.progressRequired;
+//         break;
+//
+//       case "upgradeShop":
+//         let ownedUpgradeObject = characterData.upgrades.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
+//         let masterUpgradeObject = upgradeList.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
+//         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('upgradeShop', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + ownedUpgradeObject.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (masterUpgradeObject.maxLevel - ownedUpgradeObject.level) + "</span></div></div><div class='progressRightLabel'><span>" + masterUpgradeObject.maxLevel + "</span></div></div></li>";
+//         pBarTarget = $(featuresListSelector + " #" + item.name + " .progressWrapper");
+//         pBarPercent = (ownedUpgradeObject.level / masterUpgradeObject.maxLevel) * 100;
+//         pBarLeftLabel = ownedUpgradeObject.level;
+//         pBarRightLabel = (masterUpgradeObject.maxLevel - ownedUpgradeObject.level);
+//         pBarMaxLabel = masterUpgradeObject.maxLevel;
+//         break;
+//     }
+//     if (targetLI.length<=0) {
+//       featuresList.append(content);
+//     }
+//     setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel, 0);
+//     // if (targetLI.length>0) {
+//     //   if (content != targetLI.html()) {
+//     //     targetLI.html(content);
+//     //   }
+//     // }
+//     // else {
+//     //   featuresList.append(content);
+//     // }
+//   });
+// }
 
 function getCurrentRegion() {
   return regions.filter(aRegion => aRegion.name == activeRegion)[0];
@@ -251,10 +225,8 @@ function getCurrentRegion() {
 function refreshRegion() {
   //console.log("Refreshing Region from Character Data");
 
-  refreshRegionAttributes();
-  refreshRegionItems();
-  refreshRegionUpgrades();
-  refreshRegionFeatures();
+  // refreshRegionAttributes();
+  // refreshRegionCards();
 }
 
 /**
@@ -301,164 +273,3 @@ function msToTime(s) {
 
   return text;
 }
-
-// /**
-// * Update Currency List by ID
-// * @param {Array} newLiArray An array containing objects with the following properties: name (string), value (numeric), visible (boolean)
-// */
-// function updateCurrencyListByID(listID, newLiArray) {
-//   const target = $("#" + listID);
-//   target.empty();
-//   var items = [];
-//   $.each(newLiArray, function(i, item) {
-//     itemString = "<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.value + "</span></div></li>";
-//     items.push(itemString);
-//   });
-//   target.append(items.join(''));
-// }
-
-// /**
-// * Update Currency List by ID
-// * @param {Array} newLiArray An array containing objects with the following properties: name (string), value (numeric), visible (boolean)
-// */
-// function updateIncrementerListByID(listID, newLiArray) {
-//   console.log("updateIncrementerListByID | "+ listID)
-//   console.log(newLiArray)
-//   const target = $("#" + listID);
-//   target.empty();
-//   var items = [];
-//   //TODO: Figure out how to handle looking up type of incrementer
-//   $.each(newLiArray, function(index, item) {
-//     itemString = buildCardHTML(item);
-//     items.push(itemString);
-//   });
-//   target.append(items.join(''));
-//   let progressBarArray = newLiArray.filter(x => x.cardType === "progressBar");
-//   $.each(progressBarArray, function(index, item) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//     //TOP TODO: make it so this and the other stuff on the page doesnt get a full update each time again... yeesh this is a pain but atlast its updating
-//     //GET THE FLASHING EFFECT WORKING TOO WHEN STUFF UPDATES AGAIN! DUNNO WHY THAT BROKE
-//     //ALSO on mobile the currencies won't wrap if overflow... probably cause of set height... DANGIT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//     if (item.name === "lifting") {
-//       setProgressBar($("#" + item.name + " .progressWrapper"), (item.metadata.setProgress / item.metadata.repsPerSet) * 100, item.metadata.setProgress, item.metadata.repsPerSet - item.metadata.setProgress, item.metadata.repsPerSet);
-//     }
-//   });
-// }
-
-// /**
-// * Update Specific Text for ID
-// * @param {String} liID A string with the un-#'d ID of the target LI
-// * @param {String} newText The text that will replace the existing text in the button
-// */
-// function updateTextForSpecificID(liID, newText) {
-//   const target = $("#" + liID);
-//   target.text = newText;
-// }
-
-// /**
-// * Updates the text of each newTextArr entry
-// * @param {String} ulID A string with the un-#'d ID of the target UL
-// * @param {Array} {Object} newTextArr The array containing the objects of the form: headerText, descriptorText, buttonText describing how to update each (if update necessary else null). Button text undefined for currencies
-// */
-// function updateAllLITextUnderULByID(ulID, newTextArr) {
-//   /*
-
-//   Todo: Have this check whether the text is the same, if so don't bother updating the DOM
-
-//   */
-//   $.each(newTextArr, function(index, element) {
-//     if (element) {
-//       let textPath = "";
-//       if (element.headerText !== undefined) {
-//         textPath = "#" + stripWhitespace(element.headerText) + " .entryHeader strong";
-//         let header = $(textPath);
-//         //if different, update text, else skip
-//         if (header.text() != element.headerText) {
-//           changeText(textPath, element.headerText);
-//         }
-//       }
-//       if (element.descriptorText !== undefined) {
-//         textPath = "#" + stripWhitespace(element.headerText) + " .entryDescriptor>span";
-//         let descriptor = $(textPath);
-//         //if different, update text, else skip)
-//         if (descriptor.text() != element.descriptorText) {
-//           changeText(textPath, element.descriptorText);
-//         }
-//       }
-//       if (element.buttonText !== undefined) { //if buttonText is undefined, is currency
-//         textPath = "#" + stripWhitespace(element.headerText) + " .entryButton .buttonText";
-//         let button = $(textPath);
-//         if (button && button.is(":visible")) { //if the button is in existence and visible
-//           if (element.buttonText === "") { //if buttonText is blank, hide the button
-//             console.log("Hiding button");
-//             button.hide();
-//           }
-//           else {
-//             button.show(); //make visible if not already
-//             //if different, update text, else skip
-//             if (button.text() != element.buttonText) {
-//               changeText(textPath, element.buttonText);
-//             }
-//           }
-//         }
-//         else {
-//           console.log("CRITICAL WARNING - Attempting to edit the text of a non-existant button!");
-//         }
-//       }
-//     }
-//   });
-// }
-
-// /**
-// * Decides which update method to use based on updateType and formats the given information appropriately for that method
-// * @param {String} givenID The target ID without the preceding #
-// * @param {String} updateType A string describing what kind of update this is
-// * @param {Array} {Object} args An array of objects which include necessary information based on updateType
-// */
-// function decideUpdateMethod(givenID, updateType, args) {
-//   switch(updateType) {
-//     case "Features-Full":
-//       updateIncrementerListByID(givenID, args.newLIArray);
-//       break;
-
-//     case "Attributes-Full":
-//       updateCurrencyListByID(givenID, args.newLIArray);
-//       break;
-
-//     // Deprecated
-//     // case "Text-Only":
-//     //   updateAllLITextUnderULByID(givenID, args.textArr);
-//     //   break;
-//   }
-// }
-
-// /** BIG TODO: SOOOO it would be best if this could be designed such that updateCurrencyList and updateIncrementerList just update the text rather than the entire set of lis each time because that's inefficient and also introduces a kind of annoying flashing on hover css... just don't know how best to tackle that right now. This whole thing could stand to be reworked but I want to get actual content in and bring in plinko **/
