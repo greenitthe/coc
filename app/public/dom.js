@@ -10,7 +10,7 @@ function showUserInfo() {
   $("#usernameForm").removeClass("slideInDown").addClass("slideOutUp");
   $("#userInfo").removeClass("slideOutDown").addClass("slideInUp");
   setTimeout(toggleElements, 1500, "#usernameForm", "#userInfo");
-  $('#gamePage').unblock();
+  //$('#gamePage').unblock();
 }
 
 function showUsername() {
@@ -111,10 +111,12 @@ function sortDataBySortOrder(dataArr) {
  */
 function handleGlobalAttributesUpdate(data) {
   let sortedData = sortDataBySortOrder(data);
-  updateLIsWithinListIfTextDiffers(sortedData, "#globalAttributesList", ".gsValue");
+  //FIXME: updateLIsWithinListIfTextDiffers(sortedData, "#globalAttributesList", ".gsValue");
 }
 
 function updateLIsWithinListIfTextDiffers(sortedData, listTarget, valueCriteria) {
+  console.log("SDATA")
+  console.log(sortedData)
   for (var i = 0; i < sortedData.length; i++) {
     let item = sortedData[i];
     let list = $(listTarget);

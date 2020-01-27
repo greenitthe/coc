@@ -91,46 +91,53 @@ $.getJSON('/json/cards.json', function(json) { console.log("Cards JSON Loaded");
 
 var attrInfo = [];
 var tAttrInfo = [];
+var gAttrInfo = [];
 
-function parseAttrCSV (data) {
-  Papa.parse(data, {
+//TODO: bother abstracting this function
+function updateAttrInfo(newArr) {
+  attrInfo = newArr;
+}
+
+function updateTAttrInfo(newArr) {
+  tAttrInfo = newArr;
+}
+
+function updateGAttrInfo(newArr) {
+  gAttrInfo = newArr;
+}
+
+function papaParseCSV(targetUpdateFunction, filename) {
+  Papa.parse("/csv/" + filename + ".csv", {
+    header: true,
+    dynamicType: true,
+    download: true,
+    delimiter: "|",
     complete: function (results) {
-      console.log("Attributes CSV Loaded");
-      attrInfo = results;
+      console.log(filename + " CSV Loaded");
+      targetUpdateFunction(results.data);
+      // targetVariable = results.data;
       loadStatus--;
       console.log("Load Status: " + loadStatus);
     }
   });
 }
 
-function parseTAtterCSV (data) {
-  Papa.parse(data, {
-    complete: function (results) {
-      console.log("Attributes CSV Loaded");
-      tAttrInfo = results;
-      loadStatus--;
-      console.log("Load Status: " + loadStatus);
-    }
-  });
-}
+papaParseCSV(updateAttrInfo, "attributes");
+papaParseCSV(updateTAttrInfo, "tempAttributes");
+papaParseCSV(updateGAttrInfo, "gAttributes");
 
-let attrFile = $.ajax({
-  type: 'GET',
-  url: 'csv/attributes.csv',
-  dataType: 'csv',
-  success: function () {},
-  data: {},
-  success: parseAttrCSV
-});
-
-let tAttrFile = $.ajax({
-  type: 'GET',
-  url: 'csv/tempAttributes.csv',
-  dataType: 'csv',
-  success: function () {},
-  data: {},
-  success: parseTAtterCSV
-});
+// Papa.parse("/csv/attributes.csv", {
+//   header: true,
+//   dynamicType: true,
+//   download: true,
+//   delimiter: "|",
+//   complete: function (results) {
+//     console.log("attrInfo CSV Loaded");
+//     attrInfo = results.data;
+//     loadStatus--;
+//     console.log("Load Status: " + loadStatus);
+//   }
+// });
 
 //Save Game
 function saveGame() {
