@@ -1,11 +1,11 @@
 [
   {
-    "name": "condenser",
-    "displayName": "Energy Condenser",
-    "region": "core",
-    "type": "progressBar",
     "attributeID": 13,
-    "maxLevel": 1,
+    "name": "condenser",
+    "region": "core",
+    "type": "multiclickGatherer",
+    "relevantTAttrID": 0,
+    "buttonText": "Condense!",
     "costStructure": [
       {
         "attrID": [11],
@@ -28,12 +28,12 @@
     ]
   },
   {
+    "attributeID": 10,
     "name": "core",
-    "displayName": "Core",
     "region": "core",
     "type": "upgradeable",
-    "attributeID": 10,
-    "maxLevel": 2,
+    "relevantTAttrID": -1,
+    "buttonText": "Upgrade",
     "costStructure": [
       {
         "attrID": [11],

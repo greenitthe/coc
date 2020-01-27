@@ -1,2 +1,2 @@
-id|name|displayName|region|sortOrder|description|barToDisplayIn
-0|condenserProgress|Condenser Progress|core|0|Progress towards condensing energy.|n/a
+id|name|displayName|region|sortOrder|description|level|maxLevel
+0|condenserProgress|Condenser Progress|core|0|Progress towards condensing energy.|0|20

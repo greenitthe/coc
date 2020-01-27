@@ -35,9 +35,14 @@ function checkAffordableCostStructure(attributes, costStructure) {
 function buttonUsed(type, name) {
   incrementClicks();
   //currentRegion becomes regionCardsArr
-  let regionCardsArr = cards.filter(card => card.region == activeRegion);
+  let regionCardsArr = cards.filter(card => card.region === activeRegion);
   //let targetFeature = currentRegion.features.filter(aFeature => aFeature.name == name && aFeature.cardType == type)[0];
-  let targetFeature = regionCardsArr.filter(card => card.name == name && card.type == type)[0];
+  
+  
+  //FIXME: card.name is now nonsense, name stored in card.attributeID (attribute.name)
+  
+  
+  let buttonCard = regionCardsArr.filter(card => card.name == name && card.type == type)[0];
   switch (type) {
     case "upgradeable":
       let canAfford = checkAffordableCostStructure(cData.attributes, targetFeature.costStructure);
@@ -45,7 +50,7 @@ function buttonUsed(type, name) {
         sendAction("upgradePurchaseAttempt", {cardName: name});
       }
       break;
-    case "progressBar":
+    case "multiclickGatherer":
       //FIXME: Once cards actually display
       //targetFeature.
       break;

@@ -62,7 +62,7 @@ function addPercentToProgressBar($targetProgressHolder, addPercent, pBarLabel, r
   setProgressBar($targetProgressHolder, newPercent, pBarLabel, rBarLabel, rightLabel, 100);
 }
 
-function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, rightLabel, speed) {
+function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, leftLabel, rightLabel, speed) {
   let progressHolderWidth = $($targetProgressHolder.find(".progressHolder")[0]).width();
   let progressBarWidth = percent * progressHolderWidth / 100;
   if (percent < 1) { //new percent less than 1, hide left text
@@ -75,6 +75,7 @@ function setProgressBar($targetProgressHolder, percent, pBarLabel, rBarLabel, ri
   $targetProgressHolder.find(".progressRemaining").animate({width: ((100 - (progressBarWidth*100)) / 100) }, 6);
   $targetProgressHolder.find(".progressBarText").html(pBarLabel);
   $targetProgressHolder.find(".progressRemainingText").html(rBarLabel);
+  $targetProgressHolder.find(".progressLeftLabel").html(leftLabel);
   $targetProgressHolder.find(".progressRightLabel").html(rightLabel);
 }
 
@@ -151,6 +152,7 @@ function refreshRegionAndUnblock() {
 }
 
 function refreshRegionAttributes() {
+  console.log("Refreshing Region Attributes");
   attrInfo.filter(attr => attr.region.toLowerCase() === activeRegion.toLowerCase()).forEach(function(item) {
     // console.log("refresh region attributes")
     // console.log(item);
@@ -178,86 +180,84 @@ function handleCurrenciesBarItem(attrInfoObject, cDataAttrObject) {
   determineUpdateAttrTextOrMakeNew(targetLI, cList, cDataAttrObject, attrInfoObject, ".cValue", true);
 }
 
-// function refreshRegionAttributes() {
-//   //reworking from .currencies to .attributes
-//   characterData.attributes.forEach(function(item) {
-//     let aList = $("#regionAttributesList");
-//     let targetLI = aList.find("#" + item.name.toLowerCase());
-//     determineUpdateAttrTextOrMakeNew(targetLI, aList, item);
-//     if (targetLI.length === 1) {
-//       let targetSpan = $($(targetLI[0]).find(".aValue")[0]);
-//       if (targetSpan.text() != item.amount.toString() + '/' + item.maxAmount.toString()) {
-//         changeText(targetSpan, item.amount.toString() + '/' + item.maxAmount.toString());
-//       }
-//     }
-//     else if (targetLI.length === 0) {
-//       aList.append('<li id="' + item.name.toLowerCase() + '"><strong class="aName">' + item.name + '</strong><div><span class="aValue">' + item.amount + '/' + item.maxAmount + '</span><span class="aPValue"></span></div></li>');
-//       console.log("In refreshRegion: In refresh attributes: targetLI not found, creating!");
-//     }
-//     else {
-//       console.log(item.name.toLowerCase());
-//       console.log(item.amount);
-//       console.log(targetLI);
-//       console.log("Warning: In refreshRegion: In refresh attributes: Multiple TargetLIs found or unexpected find value.");
-//     }
-//   });
-// }
-//
-// function refreshRegionCards() {
-//   var currentRegion = getCurrentRegion();
-//   const featuresListSelector = "#regionFeaturesList";
-//   var featuresList = $(featuresListSelector);
-//   //reworking from .features to .cards
-//   currentRegion.cards.forEach(function (item) {
-//     //console.log($("#regionFeaturesList #" + item.name + " .progressWrapper"))
-//     var content = "";
-//     var targetLI = featuresList.find("#" + item.name);
-//     let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel;
-//     switch(item.cardType) {
-//       case "progressBar":
-//         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('progressBar', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + item.currentProgress + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (item.progressRequired - item.currentProgress) + "</span></div></div><div class='progressRightLabel'><span>" + item.progressRequired + "</span></div></div></li>";
-//         pBarTarget = $(featuresListSelector + " #" + item.name + " .progressWrapper");
-//         pBarPercent = item.actualPercent;
-//         pBarLeftLabel = item.currentProgress;
-//         pBarRightLabel = (item.progressRequired - item.currentProgress);
-//         pBarMaxLabel = item.progressRequired;
-//         break;
-//
-//       case "upgradeShop":
-//         let ownedUpgradeObject = characterData.upgrades.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
-//         let masterUpgradeObject = upgradeList.filter(upgrade => upgrade.name == item.upgradeTarget)[0];
-//         content="<li id='" + item.name + "'><div class='entryHeader'><strong>" + item.displayName + "</strong></div><div class='entryDescriptor'><span>" + item.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('upgradeShop', '" + item.name + "')\"><span class='buttonText'>" + item.buttonText + "</span></button><div class='progressWrapper'><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + ownedUpgradeObject.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (masterUpgradeObject.maxLevel - ownedUpgradeObject.level) + "</span></div></div><div class='progressRightLabel'><span>" + masterUpgradeObject.maxLevel + "</span></div></div></li>";
-//         pBarTarget = $(featuresListSelector + " #" + item.name + " .progressWrapper");
-//         pBarPercent = (ownedUpgradeObject.level / masterUpgradeObject.maxLevel) * 100;
-//         pBarLeftLabel = ownedUpgradeObject.level;
-//         pBarRightLabel = (masterUpgradeObject.maxLevel - ownedUpgradeObject.level);
-//         pBarMaxLabel = masterUpgradeObject.maxLevel;
-//         break;
-//     }
-//     if (targetLI.length<=0) {
-//       featuresList.append(content);
-//     }
-//     setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMaxLabel, 0);
-//     // if (targetLI.length>0) {
-//     //   if (content != targetLI.html()) {
-//     //     targetLI.html(content);
-//     //   }
-//     // }
-//     // else {
-//     //   featuresList.append(content);
-//     // }
-//   });
-// }
-
-function getCurrentRegion() {
-  return regions.filter(aRegion => aRegion.name == activeRegion)[0];
+function formatUpgradeCost(cardLevel, card) {
+  let result = "";
+  let isFirst = true;
+  let costItem = card.costStructure[cardLevel];
+  for (var i = 0; i < costItem.attrID.length; i++) {
+    if (isFirst) { isFirst = false; }
+    else { result += ", "; }
+    let attrID = costItem.attrID[i];
+    let isTempAttr = costItem.isTempAttr[i];
+    let attrAmount = costItem.attrAmount[i];
+    // console.log(costItem)
+    // console.log(attrID)
+    // console.log(isTempAttr)
+    // console.log(attrAmount)
+    // console.log(characterData.tempAttributes)
+    let costItemName = costItem.isTempAttr[i] ? characterData.tempAttributes.filter(attr => attr.id === costItem.attrID[i])[0].displayName : attrInfo.filter(attr => attr.id === costItem.attrID[i])[0].displayName;
+    result += costItem.attrAmount[i] + " " + costItemName;
+  }
+  return "(" + result + ")"
 }
+
+function refreshRegionCards() {
+  console.log("Refreshing Region Cards")
+  const cardListSelector = "#regionCardsList";
+  var cardList = $(cardListSelector);
+  var regionCardsArray = cards.filter(card => card.region.toLowerCase() === activeRegion.toLowerCase());
+  regionCardsArray.forEach(function (card) {
+    let content = "";
+    let targetLI = cardList.find("#" + card.name);
+    //cardOwnAttr is the attributes of the card's attribute - just CARD ATTR level, maxLevel and attr ID, not relevant until I display them (and an upgrade button for the card itself)
+    let cardOwnAttr = characterData.attributes.filter(attr => attr.id === card.attributeID)[0];
+    let cardAttr = attrInfo.filter(attr => attr.id === card.attributeID)[0];
+    let cardTAttr = characterData.tempAttributes.filter(attr => attr.id === card.relevantTAttrID)[0];
+    let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel;
+    //Below is not presently needed. May add tooltips or something in the future so leaving for now...
+    // let targetTAttrInfo = tAttrInfo.filter(attr => attr.id === card.relevantTAttrID)[0];
+    switch(card.type) {
+      case "multiclickGatherer": //read: progress bar that fills up to generate item
+        content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + "</span></button><div class='progressWrapper'><div class='progressLeftLabel hidden'><span>" + " " + "</span></div><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + cardTAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (cardTAttr.maxLevel - cardTAttr.level) + "</span></div></div><div class='progressRightLabel'><span>" + cardTAttr.maxLevel + "</span></div></div></li>";
+        pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+        pBarPercent = ((cardTAttr.maxLevel - (cardTAttr.maxLevel - cardTAttr.level))/cardTAttr.maxLevel)*100;
+        pBarLeftLabel = cardTAttr.level;
+        pBarRightLabel = (cardTAttr.maxLevel - cardTAttr.level);
+        pBarMinLabel = "";
+        pBarMaxLabel = cardTAttr.maxLevel;
+        break;
+      case "upgradeable":
+        console.log("--- " + cardAttr.displayName + " ---")
+        console.log(card.type)
+        console.log(cardOwnAttr.level)
+        content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " " + formatUpgradeCost(cardOwnAttr.level, card) + "</span></button><div class='progressWrapper'><div class='progressLeftLabel'><span>" + cardOwnAttr.level + "</span></div><div class='progressHolder'><div class='progressBar progressRedOrange'><span class='progressBarText'>" + cardOwnAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + " " + "</span></div></div><div class='progressRightLabel'><span>" + cardOwnAttr.maxLevel + "</span></div></div></li>";
+        console.log(content)
+        pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+        pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
+        pBarLeftLabel = cardOwnAttr.level;
+        pBarRightLabel = "";
+        pBarMinLabel = cardOwnAttr.level;
+        pBarMaxLabel = cardOwnAttr.maxLevel;
+        break;
+    }
+    if (targetLI.length<=0) {
+      cardList.append(content);
+    }
+    if (pBarTarget !== undefined) {
+      setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel, 0);
+    }
+  });
+}
+
+// function getCurrentRegion() {
+//   return regions.filter(aRegion => aRegion.name == activeRegion)[0];
+// }
 
 function refreshRegion() {
   //console.log("Refreshing Region from Character Data");
 
   refreshRegionAttributes();
-  // refreshRegionCards();
+  refreshRegionCards();
 }
 
 /**

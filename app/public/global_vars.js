@@ -1,5 +1,5 @@
 //Toggles whether looks at cookies for region information or from the blank template.
-const resetTemplates = false;
+const resetTemplates = true;
 // $('#gamePage').block({ message: "Loading assets...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
 var loadStatus = 5; //on 0 will enable game, each critical component should subtract 1
 
@@ -46,48 +46,15 @@ if (loadedCData !== undefined && resetTemplates === false) {
   console.log("Character Data loaded from cookies.");
   characterData = JSON.parse(loadedCData);
   loadStatus--;
+  console.log("loadStatus: " + loadStatus);
+}
+else {
+  papaParseCSV(updateTAttrInfo, "tempAttributes");
 }
 
 var cards = [];
+//Note: If JSON not loaded, card.json needs to be validated as it is most likely misshapen somewhere
 $.getJSON('/json/cards.json', function(json) { console.log("Cards JSON Loaded"); cards = json; loadStatus--; console.log("Load Status: " + loadStatus); });
-
-//THESE ARENT WORKING. WORK IF ASYNC... (see below)
-
-// var attrInfo = [];
-// let attrFile = $.ajax({
-//   type: 'GET',
-//   url: 'csv/attributes.csv',
-//   dataType: 'csv',
-//   success: function () {},
-//   data: {},
-//   async: false
-// });
-// Papa.parse(attrFile, {
-//   complete: function(results) {
-//     console.log("Attributes CSV Loaded");
-//     attrInfo = results;
-//     loadStatus--;
-//     console.log("Load Status: " + loadStatus);
-//   }
-// });
-//
-// var tAttrInfo = [];
-// let tAttrFile = $.ajax({
-//   type: 'GET',
-//   url: 'csv/tempAttributes.csv',
-//   dataType: 'csv',
-//   success: function () {},
-//   data: {},
-//   async: false
-// });
-// Papa.parse(tAttrFile, {
-//   complete: function(results) {
-//     console.log("Temp Attributes CSV Loaded");
-//     tAttrInfo = results;
-//     loadStatus--;
-//     console.log("Load Status: " + loadStatus);
-//   }
-// });
 
 var attrInfo = [];
 var tAttrInfo = [];
@@ -99,18 +66,18 @@ function updateAttrInfo(newArr) {
 }
 
 function pushToCDataTAttrs(objectToPush) {
-  characterData.push(objectToPush);
+  characterData.tempAttributes.push(objectToPush);
 }
 
 function updateCDataTAttrs(newArr) {
   characterData.tempAttributes = [];
   //THIS SETS UP THE STRUCTURE FOR tempAttributes
-  newArr.forEach(attr => pushToCDataTAttrs({id: attr.id, currentProgress: 0}));
+  newArr.forEach(attr => pushToCDataTAttrs(attr));
 }
 
 function updateTAttrInfo(newArr) {
   tAttrInfo = newArr;
-  updateCDataTAttrs;
+  updateCDataTAttrs(newArr);
 }
 
 function updateGAttrInfo(newArr) {
@@ -124,6 +91,7 @@ function papaParseCSV(targetUpdateFunction, filename) {
     download: true,
     delimiter: "|",
     keepEmptyRows: false,
+    skipEmptyLines: true,
     complete: function (results) {
       console.log(filename + " CSV Loaded");
       targetUpdateFunction(results.data);
@@ -135,21 +103,7 @@ function papaParseCSV(targetUpdateFunction, filename) {
 }
 
 papaParseCSV(updateAttrInfo, "attributes");
-papaParseCSV(updateTAttrInfo, "tempAttributes");
 papaParseCSV(updateGAttrInfo, "gAttributes");
-
-// Papa.parse("/csv/attributes.csv", {
-//   header: true,
-//   dynamicType: true,
-//   download: true,
-//   delimiter: "|",
-//   complete: function (results) {
-//     console.log("attrInfo CSV Loaded");
-//     attrInfo = results.data;
-//     loadStatus--;
-//     console.log("Load Status: " + loadStatus);
-//   }
-// });
 
 //Save Game
 function saveGame() {

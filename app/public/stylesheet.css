@@ -4,9 +4,9 @@
 #regionalCurrencies -> #regionAttributes
 #rCurList -> #regionAttributesList
 .currencyList -> .attributesList
-#regionIncrementals -> #regionFeatures
-#rIncWrapper -> #regionFeaturesWrapper
-#rIncList -> #regionFeaturesList
+#regionIncrementals -> #regionCards
+#rIncWrapper -> #regionCardsWrapper
+#rIncList -> #regionCardsList
 .incrementer -> .feature
 */
 
@@ -20,6 +20,10 @@ body {
   font-size: 14px;
   overflow: hidden;
   background-color: #575454;
+}
+
+.hidden {
+  display: none !important;
 }
 
 #gamePage {
@@ -79,14 +83,14 @@ body {
   height: 2.6rem;
 }
 
-#regionFeatures {
+#regionCards {
   width: 100%;
   height: calc(100% - 3rem - 2.3rem);
   overflow: auto;
 }
 
 
-#regionFeaturesList li {
+#regionCardsList li {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -117,7 +121,7 @@ body {
   background-color: #6F87F1;
 }
 
-#regionFeatures {
+#regionCards {
   background-color: #CBE2FC;
 }
 
@@ -163,7 +167,7 @@ body {
   text-align: center;
 }
 
-#regionFeaturesList li {
+#regionCardsList li {
   background-color: white;
 }
 
@@ -382,6 +386,15 @@ nav {
   align-self: center;
 }
 
+.progressLeftLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-width: 10%;
+  padding: 0 4px;
+}
+
 .progressRightLabel {
   display: flex;
   flex-direction: row;
@@ -433,14 +446,19 @@ nav {
   background-color: #00a6ff;
 }
 
+.progressRedOrange {
+  color: #fff;
+  background-color: #DE921F;
+}
+
 /** Media Queries **/
 /* Mobile Styles */
 @media only screen and (max-width: 420px) { /* 420px */
-  #regionFeaturesList {
+  #regionCardsList {
     padding-top: 2vh;
   }
 
-  #regionFeaturesList li {
+  #regionCardsList li {
     width: 90%;
     min-height: 20vh;
     margin-bottom: 2vh;
@@ -477,11 +495,11 @@ nav {
 
 /* Tablet Styles */
 @media only screen and (min-width: 421px) and (max-width: 690px) {
-  #regionFeaturesList {
+  #regionCardsList {
     padding-top: 2vh;
   }
 
-  #regionFeaturesList li {
+  #regionCardsList li {
     width: 90%;
     min-height: 20vh;
     margin-bottom: 2vh;
@@ -522,7 +540,7 @@ nav {
 
 /* Laptop Styles */
 @media only screen and (min-width: 691px) and (max-width: 960px) {
-  #regionFeaturesList li {
+  #regionCardsList li {
     width: 14rem;
     min-height: 10vw;
     height: auto;
@@ -553,7 +571,7 @@ nav {
 
 /* Desktop Styles */
 @media only screen and (min-width: 961px) {
-  #regionFeaturesList li {
+  #regionCardsList li {
     width: 24rem;
     min-height: 10vw;
     height: auto;
