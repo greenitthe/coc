@@ -41,7 +41,7 @@ $(document).ready(function () {
 });
 
 function updateClickCounter() {
-  let selector = $("#globalAttributes #totalclicks .pValue");
+  let selector = $("#globalAttributes #gClicks .pValue");
   let newText = " (+" + clickCounter + ")";
   changeText(selector, newText);
 }
@@ -227,11 +227,7 @@ function refreshRegionCards() {
         pBarMaxLabel = cardTAttr.maxLevel;
         break;
       case "upgradeable":
-        console.log("--- " + cardAttr.displayName + " ---")
-        console.log(card.type)
-        console.log(cardOwnAttr.level)
         content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " " + formatUpgradeCost(cardOwnAttr.level, card) + "</span></button><div class='progressWrapper'><div class='progressLeftLabel'><span>" + cardOwnAttr.level + "</span></div><div class='progressHolder'><div class='progressBar progressRedOrange'><span class='progressBarText'>" + cardOwnAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + " " + "</span></div></div><div class='progressRightLabel'><span>" + cardOwnAttr.maxLevel + "</span></div></div></li>";
-        console.log(content)
         pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
         pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
         pBarLeftLabel = cardOwnAttr.level;

@@ -26,7 +26,6 @@ var backgroundColor = dark_grey;
 //Game Stuff
 var activeRegion = Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Core";
 Cookies.set("activeRegion", activeRegion);
-var fullUpdateScheduled = true;
 
 //Socket Stuff
 const servPort = ":80";

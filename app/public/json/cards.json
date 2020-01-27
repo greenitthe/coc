@@ -8,7 +8,7 @@
     "buttonText": "Condense!",
     "costStructure": [
       {
-        "attrID": [11],
+        "attrID": [0],
         "isTempAttr": [true],
         "attrAmount": [5]
       }

@@ -298,129 +298,128 @@ io.on('connection', function (socket) {
     });
   });
 
-//FIXME: Uncomment this after reworking if desirable to use this iteration
-  // socket.on('clickUpdate', function (data) {
-  //   //TODO: If last received clickUpdate from user within 50 seconds, ignore request
-  //   try {
-  //     let username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
-  //   } catch (e) {
-  //     console.log("Error getting username from clickUpdate");
-  //     console.log(e);
-  //   }
-  //   let clicks = data.clicksLastMinute;
-  //   clicks = clicks > 600 ? 600 : clicks;
-  //   if(verboseLogging) {
-  //     console.log("-----");
-  //     console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == 600 ? " Rate Limiting to 600." : ""));
-  //   }
-  //   mTools.updateObject(GlobalStats, {name: "Total Clicks"}, [{ '$inc': {'value': clicks}}], function(err, object) {return;});
-  //   socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
-  // });
 
-//FIXME: This can basically be ignored until reworked - final iteration may not look the same and needs to be atomized into function anyways
-  // socket.on('attemptAction', function (data) {
-  //   //Pull username out of the room name the socket is in
-  //   var username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
-  //   if(verboseLogging) {
-  //     console.log("-----");
-  //     console.log("[Verbose] User (" + username + ") attempted an action.");
-  //   }
-  //   //Based on the name of the action, select the appropriate response
-  //   switch(data.name) {
-  //     case "currencyUpdate":
-  //       mTools.getObject(User, {username: username}, {currencies: data.args.currencies, mTools: mTools, User: User, username: username}, function(arrRes, params) {
-  //         let newArr = arrRes[0].currencyBags.map(function (cB) {
-  //           let filteredCurrs = params.currencies.filter(curr => curr.name == cB.name);
-  //           if (filteredCurrs.length == 0) {
-  //             return cB;
-  //           }
-  //           let newC = filteredCurrs[0];
-  //           //let combinedAmounts = newC.amount + cB.amount;
-  //           let newAmount = newC.amount > cB.maxAmount ? cB.maxAmount : newC.amount;
-  //           cB.amount = newAmount;
-  //           return cB;
-  //         });
-  //         params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newArr}], function(err, object) {if(err){console.log(err);}else{console.log(object)}});
-  //       });
-  //       setTimeout(emitUserUpdate, 2000, "user_" + username, username);
-  //       break;
-  //     case "upgradePurchase":
-  //       let targetUpgrade = data.args.upgradeName;
-  //       let foundUpgrade = upgradesList.filter(upgrade => upgrade.name == targetUpgrade)[0];
-  //       if (foundUpgrade === undefined) {
-  //         //TODO: complain to client or at least in the server log
-  //       }
-  //       else {
-  //         mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, foundUpgrade: foundUpgrade}, function(arrRes, params) {
-  //           let foundUpgrade = params.foundUpgrade;
-  //           let upgradeOwned = arrRes[0].upgradesOwned.filter(upgrade => upgrade.name == foundUpgrade.name)[0];
-  //           if (upgradeOwned === undefined) {
-  //             //UPGRADE UNOWNED, CHECK FOR VALIDITY THEN ADD TO USER LIST
-  //           }
-  //           else {
-  //             let unlocked = true;
-  //             let unlockStructure = foundUpgrade.unlockStructure[upgradeOwned.level];
-  //             for (var i = 0; i < unlockStructure.criteriaNames.length; i++) {
-  //               let criteriaResponseValue;
-  //               switch(unlockStructure.criteriaTypes[i]) {
-  //                 case "MaxCurrency":
-  //                   let criteriaResponseValue = arrRes[0].currencyBags.filter(curr => curr.name == unlockStructure.criteriaNames[i])[0].maxAmount;
-  //                   break;
-  //               }
-  //               if (criteriaResponseValue < unlockStructure.criteriaAmounts[i]) {
-  //                 unlocked = false;
-  //               }
-  //             }
-  //             //console.log("Unlocked?: " + unlocked);
-  //             if (unlocked) { //then check if upgrade is possible
-  //               let costStructure = foundUpgrade.costStructure[upgradeOwned.level];
-  //               let newCBArray = arrRes[0].currencyBags;
-  //               let affordable = true;
-  //               for (var i = 0; i < costStructure.currencyNames.length; i++) {
-  //                 //todo: wrap all this junk in try...catches to not crash when users send nonsense
-  //                 let targetCurrency = newCBArray.filter(curr => curr.name == costStructure.currencyNames[i])[0];
-  //                 if (targetCurrency.amount >= costStructure.currencyAmounts[i]) {
-  //                   targetCurrency.amount = targetCurrency.amount - costStructure.currencyAmounts[i];
-  //                 }
-  //                 else {
-  //                   affordable = false;
-  //                 }
-  //               }
-  //               if (affordable) {
-  //                 let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
-  //                   let newItem = item;
-  //                   newItem.level = item.name == foundUpgrade.name ? item.level + 1 : item.level;
-  //                   return newItem;
-  //                 });
-  //                  // newCBArray[0].amount = 5;
-  //                  // newUpgradesArray[0].level = 0;
-  //
-  //                 //Now handle adding the benefits of the upgrade:
-  //                 let rewardStructure = foundUpgrade.rewardStructure[upgradeOwned.level-1];
-  //                 for (var i = 0; i < rewardStructure.targetNames.length; i++) {
-  //                   switch (rewardStructure.targetTypes[i]) {
-  //                     case "MaxCurrency":
-  //                       let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
-  //                       rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
-  //                       break;
-  //                     //TODO: add other cases
-  //                   }
-  //                 }
-  //
-  //                 params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
-  //                   function(err, object) {
-  //                     if(err){console.log(err);}
-  //                     //else{console.log(object)}
-  //                     this.emitUserUpdate("user_" + this.username, this.username);
-  //                   }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-  //                 params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundUpgrade.name});
-  //                 // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
-  //               }
-  //             }
-  //           }
-  //         });
-  //       }
-  //       break;
-  //   }
-  // });
+  socket.on('clickUpdate', function (data) {
+    //TODO: If last received clickUpdate from user within 50 seconds, ignore request
+    try {
+      let username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
+    } catch (e) {
+      console.log("Error getting username from clickUpdate");
+      console.log(e);
+    }
+    let clicks = data.clicksLastMinute;
+    clicks = clicks > 600 ? 600 : clicks;
+    if(verboseLogging) {
+      console.log("-----");
+      console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == 600 ? " Rate Limiting to 600." : ""));
+    }
+    mTools.updateObject(GlobalAttributes, {id: -1}, [{ '$inc': {'level': clicks}}], function(err, object) {return;});
+    socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
+  });
+  
+  socket.on('attemptAction', function (data) {
+    //TODO: Set up a rate limit for these requests - dropping when over
+    //Pull username out of the room name the socket is in
+    var username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
+    if(verboseLogging) {
+      console.log("-----");
+      console.log("[Verbose] User (" + username + ") attempted an action: " + data.name);
+    }
+    //Based on the name of the action, select the appropriate response
+    switch(data.name) {
+      case "attributeUpdate":
+        mTools.getObject(User, {username: username}, {attributes: data.args.attributes, mTools: mTools, User: User, username: username}, function(arrRes, params) {
+          let newAttrArray = arrRes[0].attributes.map(function (storedAttr) {
+            let filteredAttrs = params.attributes.filter(attr => attr.id == storedAttr.id);
+            if (filteredAttrs.length !== 1) {
+              return storedAttr;
+            }
+            let newAttr = filteredAttrs[0];
+            let newLevel = newAttr.level > storedAttr.maxLevel ? storedAttr.maxLevel : newAttr.level;
+            storedAttr.level = newLevel;
+            return storedAttr;
+          });
+          params.mTools.updateObject(params.User, {username: params.username}, [{attributes: newAttrArray}], function(err, object) {if(err){console.log(err);}else{}});
+        });
+        setTimeout(emitUserUpdate, 2000, "user_" + username, username);
+        break;
+      case "upgradePurchase":
+        // let targetUpgrade = data.args.upgradeName;
+        // let foundUpgrade = upgradesList.filter(upgrade => upgrade.name == targetUpgrade)[0];
+        // if (foundUpgrade === undefined) {
+        //   //TODO: complain to client or at least in the server log
+        // }
+        // else {
+        //   mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, foundUpgrade: foundUpgrade}, function(arrRes, params) {
+        //     let foundUpgrade = params.foundUpgrade;
+        //     let upgradeOwned = arrRes[0].upgradesOwned.filter(upgrade => upgrade.name == foundUpgrade.name)[0];
+        //     if (upgradeOwned === undefined) {
+        //       //UPGRADE UNOWNED, CHECK FOR VALIDITY THEN ADD TO USER LIST
+        //     }
+        //     else {
+        //       let unlocked = true;
+        //       let unlockStructure = foundUpgrade.unlockStructure[upgradeOwned.level];
+        //       for (var i = 0; i < unlockStructure.criteriaNames.length; i++) {
+        //         let criteriaResponseValue;
+        //         switch(unlockStructure.criteriaTypes[i]) {
+        //           case "MaxCurrency":
+        //             let criteriaResponseValue = arrRes[0].currencyBags.filter(curr => curr.name == unlockStructure.criteriaNames[i])[0].maxAmount;
+        //             break;
+        //         }
+        //         if (criteriaResponseValue < unlockStructure.criteriaAmounts[i]) {
+        //           unlocked = false;
+        //         }
+        //       }
+        //       //console.log("Unlocked?: " + unlocked);
+        //       if (unlocked) { //then check if upgrade is possible
+        //         let costStructure = foundUpgrade.costStructure[upgradeOwned.level];
+        //         let newCBArray = arrRes[0].currencyBags;
+        //         let affordable = true;
+        //         for (var i = 0; i < costStructure.currencyNames.length; i++) {
+        //           //todo: wrap all this junk in try...catches to not crash when users send nonsense
+        //           let targetCurrency = newCBArray.filter(curr => curr.name == costStructure.currencyNames[i])[0];
+        //           if (targetCurrency.amount >= costStructure.currencyAmounts[i]) {
+        //             targetCurrency.amount = targetCurrency.amount - costStructure.currencyAmounts[i];
+        //           }
+        //           else {
+        //             affordable = false;
+        //           }
+        //         }
+        //         if (affordable) {
+        //           let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
+        //             let newItem = item;
+        //             newItem.level = item.name == foundUpgrade.name ? item.level + 1 : item.level;
+        //             return newItem;
+        //           });
+        //             // newCBArray[0].amount = 5;
+        //             // newUpgradesArray[0].level = 0;
+  
+        //           //Now handle adding the benefits of the upgrade:
+        //           let rewardStructure = foundUpgrade.rewardStructure[upgradeOwned.level-1];
+        //           for (var i = 0; i < rewardStructure.targetNames.length; i++) {
+        //             switch (rewardStructure.targetTypes[i]) {
+        //               case "MaxCurrency":
+        //                 let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
+        //                 rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
+        //                 break;
+        //               //TODO: add other cases
+        //             }
+        //           }
+  
+        //           params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
+        //             function(err, object) {
+        //               if(err){console.log(err);}
+        //               //else{console.log(object)}
+        //               this.emitUserUpdate("user_" + this.username, this.username);
+        //             }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+        //           params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundUpgrade.name});
+        //           // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
+        //         }
+        //       }
+        //     }
+        //   });
+        // }
+        break;
+    }
+  });
 });

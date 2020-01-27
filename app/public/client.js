@@ -10,85 +10,69 @@ function incrementClicks() {
 //   sendAction("checkTimer", {regionName: activeRegion, timerName: name});
 // }
 
-function updateRegionAttribute(targetAttribute, incrementAmount = 1) {
-  let referenceIndex = characterData.attributes.findIndex((item => item.id == targetAttribute));
+function updateRegionAttribute(targetAttributeID, isForMaxLevel, incrementAmount = 1) {
+  let referenceIndex = characterData.attributes.findIndex((item => item.id == targetAttributeID));
   let reference = characterData.attributes[referenceIndex];
+  if (isForMaxLevel) {
+    reference.maxLevel += rewardStructure.attrAmount[i];
+  }
   if (reference.level + incrementAmount <= reference.maxLevel) {
-    //characterData.attributes[referenceIndex].amount+=incrementAmount;
     reference.level+=incrementAmount;
   }
-  //sendAction("currencyUpdate", {currencies: characterData.currencies});
+  else {
+    reference.level = reference.maxLevel;
+  }
+  console.log("Sending attributeUpdate");
   saveGame();
+  sendAction("attributeUpdate", {attributes: characterData.attributes});
 }
 
-function checkAffordableCostStructure(attributes, costStructure) {
+function checkAffordableCostStructure(costStructure) {
   let canAfford = true;
-  costStructure.forEach(function(item, index) {
-    let indexIfAvail = attributes.findIndex(item => item.id == item.attrID);
-    if (indexIfAvail === -1 || attributes[indexIfAvail].level < item.attrAmount) {
+  for (var i = 0; i < costStructure.attrID.length; i++) {
+    let attributes = costStructure.isTempAttr[i] ? characterData.tempAttributes : characterData.attributes;
+    let indexIfAvail = attributes.findIndex(attr => attr.id == costStructure.attrID[i]);
+    if (indexIfAvail === -1 || attributes[indexIfAvail].level < costStructure.attrAmount) {
       canAfford = false;
     }
-  });
+  }
   return canAfford;
 }
 
 function buttonUsed(type, name) {
+  console.log("Button used, type: " + type + " | name: " + name);
   incrementClicks();
-  //currentRegion becomes regionCardsArr
-  let regionCardsArr = cards.filter(card => card.region === activeRegion);
-  //let targetFeature = currentRegion.features.filter(aFeature => aFeature.name == name && aFeature.cardType == type)[0];
-  
-  
-  //FIXME: card.name is now nonsense, name stored in card.attributeID (attribute.name)
-  
-  
-  let buttonCard = regionCardsArr.filter(card => card.name == name && card.type == type)[0];
+  let regionCardsArray = cards.filter(card => card.region.toLowerCase() === activeRegion.toLowerCase());
+  let buttonCard = regionCardsArray.filter(card => card.name == name && card.type == type)[0];
   switch (type) {
     case "upgradeable":
-      let canAfford = checkAffordableCostStructure(cData.attributes, targetFeature.costStructure);
+      let cardAttr = characterData.attributes.filter(attr => attr.id == buttonCard.attributeID)[0];
+      let canAfford = checkAffordableCostStructure(buttonCard.costStructure[cardAttr.level]);
       if (canAfford) {
+        console.log("CanAfford upgrade, sending purchase attempt.");
         sendAction("upgradePurchaseAttempt", {cardName: name});
       }
+      //upon receipt of action response saveGame and refreshRegion
       break;
     case "multiclickGatherer":
-      //FIXME: Once cards actually display
-      //targetFeature.
+      let relevantTAttr = characterData.tempAttributes.filter(attr => attr.id == buttonCard.relevantTAttrID)[0];
+      let maxProgress = relevantTAttr.maxLevel;
+      relevantTAttr.level++;
+      if (relevantTAttr.level >= maxProgress) {
+        relevantTAttr.level = 0;
+        let rewardStructure = buttonCard.rewardStructure[relevantTAttr.level];
+        for (i = 0; i < rewardStructure.attrID.length; i++) {
+          let targetedAttributeIndex = characterData.attributes.findIndex(attr => attr.id == rewardStructure.attrID[i]);
+          updateRegionAttribute(rewardStructure.attrID[i], rewardStructure.isAwardForMaxLevel[i], rewardStructure.attrAmount[i]);
+        }
+      }
+      let pBarTarget = $("#regionCardsList #" + buttonCard.name + " .progressWrapper");
+      let pBarPercent = ((relevantTAttr.maxLevel - (relevantTAttr.maxLevel - relevantTAttr.level))/relevantTAttr.maxLevel)*100;
+      setProgressBar(pBarTarget, pBarPercent, relevantTAttr.level, (relevantTAttr.maxLevel - relevantTAttr.level), "", relevantTAttr.maxLevel, 100);
+      refreshRegionAttributes();
+      saveGame();
       break;
-    // case "progressBar":
-    //   targetFeature.currentProgress++;
-    //   let cProg = targetFeature.currentProgress;
-    //   let pReq = targetFeature.progressRequired;
-    //   if (cProg >= pReq - 0.1) {
-    //     targetFeature.currentProgress = cProg = 0;
-    //     targetFeature.spendTarget !== "" ? lookupAndSpendCurrency(targetFeature.spendTarget, targetFeature.spendAmount) : "";
-    //     updateCDataCurrency(targetFeature.currencyTarget, targetFeature.currencyAmount);
-    //   }
-    //   let percentPerProgress = (1/pReq)*100;
-    //   targetFeature.actualPercent = percentPerProgress * cProg;
-    //   let pBarHolder = $("#regionFeaturesList #" + name + " .progressWrapper");
-    //   setProgressBar(pBarHolder, targetFeature.actualPercent, cProg, pReq - cProg, pReq, 100);
-    //   break;
-    // case "upgradeShop":
-    //   var mUO = upgradeList.filter(upgrade => upgrade.name == targetFeature.upgradeTarget)[0];
-    //   var oUO = characterData.upgrades.filter(upgrade => upgrade.name == targetFeature.upgradeTarget)[0];
-    //   var canAfford = true;
-    //   for(var i = 0; i < mUO.costStructure[oUO.level].currencyNames.length; i++) {
-    //     let cName = mUO.costStructure[oUO.level].currencyNames[i];
-    //     let targetCharCurr = characterData.currencies.filter(curr => curr.name == cName)[0];
-    //     let currencyAmount = mUO.costStructure[oUO.level].currencyAmounts[i];
-    //     if (targetCharCurr === undefined) { console.log ("Undiscovered currency needed for that purchase!"); }
-    //     if ((targetCharCurr.maxAmount >= currencyAmount) && (targetCharCurr.amount >= currencyAmount)) {
-    //       //cool can afford
-    //     } else { canAfford = false; }
-    //   }
-    //   console.log("canAfford: " + canAfford);
-    //   if (canAfford) {
-    //     sendAction("upgradePurchase", {upgradeName: targetFeature.upgradeTarget});
-    //   }
-    //   break;
   }
-  saveGame();
-  refreshRegion();
 }
 
 function lookupAndSpendCurrency(spendTarget, spendAmount) {
@@ -126,3 +110,4 @@ function queueAfterLoadStatus(functionToRun, argumentsToPass) {
 
 //TODO: move activeRegion to server potentially for convenience
 changeActiveRegion(activeRegion);
+queueAfterLoadStatus(updateClickCounter);
