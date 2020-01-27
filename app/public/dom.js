@@ -41,7 +41,7 @@ $(document).ready(function () {
 });
 
 function updateClickCounter() {
-  let selector = $("#globalAttributes #totalclicks .gsPValue");
+  let selector = $("#globalAttributes #totalclicks .pValue");
   let newText = " (+" + clickCounter + ")";
   changeText(selector, newText);
 }
@@ -118,26 +118,28 @@ function updateLIsWithinListIfTextDiffers(sortedData, listTarget, valueCriteria)
   for (var i = 0; i < sortedData.length; i++) {
     let item = sortedData[i];
     let list = $(listTarget);
-    let correspAttr = gAttrInfo.filter(attr => attr.id === item.id)[0];
-    let targetLI = list.find("#" + correspAttr.name);
-    determineUpdateCardTextOrMakeNew(targetLI, list, item, correspAttr, valueCriteria);
+    let correspAttrInfo = gAttrInfo.filter(attr => attr.id === item.id)[0];
+    let targetLI = list.find("#" + correspAttrInfo.name);
+    determineUpdateAttrTextOrMakeNew(targetLI, list, item, correspAttrInfo, valueCriteria);
   }
 }
 
-function determineUpdateCardTextOrMakeNew(targetLI, list, item, correspAttr, valueCriteria) {
+function determineUpdateAttrTextOrMakeNew(targetLI, list, item, correspAttrInfo, valueCriteria, includeMax) {
+  let text = item.level.toString();
+  text += includeMax ? ("/" + item.maxLevel) : "";
   if (targetLI.length === 1) {
     let targetSpan = $($(targetLI[0]).find(valueCriteria)[0]);
-    if (targetSpan.text() != item.level.toString()) {
-      changeText(targetSpan, item.level.toString());
+    if (targetSpan.text() != text) {
+      changeText(targetSpan, text);
     }
   }
   else if (targetLI.length === 0) {
-    list.append('<li id="' + correspAttr.name + '"><strong class="gsName">' + correspAttr.displayName + '</strong><div><span class="gsValue">' + item.level.toString() + '</span><span class="gsPValue"></span></div></li>');
+    list.append('<li id="' + correspAttrInfo.name + '"><strong class="name">' + correspAttrInfo.displayName + '</strong><div><span class="' + valueCriteria.substring(1) + '">' + text + '</span><span class="pValue"></span></div></li>');
     console.log("In handleGlobalStatsUpdate, targetLI not found, creating!");
   }
   else {
-    console.log(correspAttr.name);
-    console.log(item.level.toString());
+    console.log(correspAttrInfo.name);
+    console.log(text);
     console.log(targetLI);
     console.log("Warning: In handleGlobalStatsUpdate: Multiple TargetLIs found or unexpected find value.");
   }
@@ -148,12 +150,40 @@ function refreshRegionAndUnblock() {
   refreshRegion();
 }
 
+function refreshRegionAttributes() {
+  attrInfo.filter(attr => attr.region.toLowerCase() === activeRegion.toLowerCase()).forEach(function(item) {
+    // console.log("refresh region attributes")
+    // console.log(item);
+    switch (item.barToDisplayIn) {
+      case "currencies":
+        let targetAttr = characterData.attributes.filter(attr => attr.id === item.id)[0];
+        if (targetAttr.visible == true) {
+          handleCurrenciesBarItem(item, targetAttr);
+        }
+        break;
+      case "badges":
+        
+        break;
+      //
+    }
+  });
+  // characterData.attributes.forEach(function(item) {
+  //   console.log(item)
+  // });
+}
+
+function handleCurrenciesBarItem(attrInfoObject, cDataAttrObject) {
+  let cList = $("#regionAttributesList");
+  let targetLI = cList.find("#" + attrInfoObject.name);
+  determineUpdateAttrTextOrMakeNew(targetLI, cList, cDataAttrObject, attrInfoObject, ".cValue", true);
+}
+
 // function refreshRegionAttributes() {
 //   //reworking from .currencies to .attributes
 //   characterData.attributes.forEach(function(item) {
 //     let aList = $("#regionAttributesList");
 //     let targetLI = aList.find("#" + item.name.toLowerCase());
-//     determineUpdateCardTextOrMakeNew(targetLI, aList, item);
+//     determineUpdateAttrTextOrMakeNew(targetLI, aList, item);
 //     if (targetLI.length === 1) {
 //       let targetSpan = $($(targetLI[0]).find(".aValue")[0]);
 //       if (targetSpan.text() != item.amount.toString() + '/' + item.maxAmount.toString()) {
@@ -226,7 +256,7 @@ function getCurrentRegion() {
 function refreshRegion() {
   //console.log("Refreshing Region from Character Data");
 
-  // refreshRegionAttributes();
+  refreshRegionAttributes();
   // refreshRegionCards();
 }
 

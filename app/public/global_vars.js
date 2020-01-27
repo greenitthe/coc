@@ -98,8 +98,19 @@ function updateAttrInfo(newArr) {
   attrInfo = newArr;
 }
 
+function pushToCDataTAttrs(objectToPush) {
+  characterData.push(objectToPush);
+}
+
+function updateCDataTAttrs(newArr) {
+  characterData.tempAttributes = [];
+  //THIS SETS UP THE STRUCTURE FOR tempAttributes
+  newArr.forEach(attr => pushToCDataTAttrs({id: attr.id, currentProgress: 0}));
+}
+
 function updateTAttrInfo(newArr) {
   tAttrInfo = newArr;
+  updateCDataTAttrs;
 }
 
 function updateGAttrInfo(newArr) {
@@ -112,6 +123,7 @@ function papaParseCSV(targetUpdateFunction, filename) {
     dynamicTyping: true,
     download: true,
     delimiter: "|",
+    keepEmptyRows: false,
     complete: function (results) {
       console.log(filename + " CSV Loaded");
       targetUpdateFunction(results.data);

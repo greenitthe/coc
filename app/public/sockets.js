@@ -1,5 +1,5 @@
 function updateCharacterData(data) {
-  characterData.attributes=data.upgradesOwned;
+  characterData.attributes=data.attributes;
   //cards should be initialized via json then updated either here or when buttons pressed...
   saveGame();
   refreshRegion();

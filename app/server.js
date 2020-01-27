@@ -19,7 +19,7 @@ const fs = require('fs');
 
 var gAttrs = [];
 var attrs = [];
-var finishedLoadingData = 2; //decrement upon loading each csv/json. at 0 is finished
+var finishedLoadingData = 3; //decrement upon loading each csv/json. at 0 is finished
 
 //Helper function for logging primarily objects or large arrays
 function dataLog(data) {
@@ -73,16 +73,13 @@ const globalAttributesSchema = new Schema({
 const User = mongoose.model('Users', userSchema);
 const GlobalAttributes = mongoose.model('GlobalAttributes', globalAttributesSchema);
 
+var newUserAttributes = [];
+
 function BlankUser(username, pass) {
   this.username = username;
   this.pass = pass;
   this.lastSeen = new Date();
-  this.attributes = [{
-    id: 0,
-    level: 0,
-    maxLevel: -1,
-    visible: true
-  }];
+  this.attributes = newUserAttributes;
 }
 
 function BlankGlobalAttribute(id, initialLevel, initialVisibility) {
@@ -145,6 +142,12 @@ function checkListening() {
     finishedLoadingData--;
     console.log(attrs);
   });
+  csvParse(fs.readFileSync(__dirname+'/newUserAttributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
+    console.log("[Info] Loading New User Attributes CSV!");
+    newUserAttributes = output;
+    finishedLoadingData--;
+    console.log(newUserAttributes);
+  });;
 
   startListening();
 }
@@ -260,7 +263,7 @@ io.on('connection', function (socket) {
         console.log("[Info] No credentials found for user '" + cbParams.username + "'. Making new user.");
         //function BlankUser(username, pass, schemaVersion) {
         //newObject: function(model, sourceObject, cbParameters, cb) {
-        let newUser = new cbParams.BlankUser(cbParams.username, cbParams.pass, "v0.01");
+        let newUser = new cbParams.BlankUser(cbParams.username, cbParams.pass);
         mTools.newObject(User, newUser, {}, function (cbP) { console.log("[Info] New user object added to DB." )});
         let socket = cbParams.socket;
         let newRoomName = "user_" + cbParams.username;

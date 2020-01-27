@@ -46,7 +46,8 @@ function buttonUsed(type, name) {
       }
       break;
     case "progressBar":
-
+      //FIXME: Once cards actually display
+      //targetFeature.
       break;
     // case "progressBar":
     //   targetFeature.currentProgress++;
