@@ -109,7 +109,7 @@ function updateGAttrInfo(newArr) {
 function papaParseCSV(targetUpdateFunction, filename) {
   Papa.parse("/csv/" + filename + ".csv", {
     header: true,
-    dynamicType: true,
+    dynamicTyping: true,
     download: true,
     delimiter: "|",
     complete: function (results) {

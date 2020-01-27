@@ -111,34 +111,33 @@ function sortDataBySortOrder(dataArr) {
  */
 function handleGlobalAttributesUpdate(data) {
   let sortedData = sortDataBySortOrder(data);
-  //FIXME: updateLIsWithinListIfTextDiffers(sortedData, "#globalAttributesList", ".gsValue");
+  updateLIsWithinListIfTextDiffers(sortedData, "#globalAttributesList", ".gsValue");
 }
 
 function updateLIsWithinListIfTextDiffers(sortedData, listTarget, valueCriteria) {
-  console.log("SDATA")
-  console.log(sortedData)
   for (var i = 0; i < sortedData.length; i++) {
     let item = sortedData[i];
     let list = $(listTarget);
-    let targetLI = list.find("#" + stripWhitespace(item.name.toLowerCase()));
-    determineUpdateCardTextOrMakeNew(targetLI, list, item, valueCriteria);
+    let correspAttr = gAttrInfo.filter(attr => attr.id === item.id)[0];
+    let targetLI = list.find("#" + correspAttr.name);
+    determineUpdateCardTextOrMakeNew(targetLI, list, item, correspAttr, valueCriteria);
   }
 }
 
-function determineUpdateCardTextOrMakeNew(targetLI, list, item, valueCriteria) {
+function determineUpdateCardTextOrMakeNew(targetLI, list, item, correspAttr, valueCriteria) {
   if (targetLI.length === 1) {
     let targetSpan = $($(targetLI[0]).find(valueCriteria)[0]);
-    if (targetSpan.text() != item.value.toString()) {
-      changeText(targetSpan, item.value.toString());
+    if (targetSpan.text() != item.level.toString()) {
+      changeText(targetSpan, item.level.toString());
     }
   }
   else if (targetLI.length === 0) {
-    list.append('<li id="' + stripWhitespace(item.name.toLowerCase()) + '"><strong class="gsName">' + item.name + '</strong><div><span class="gsValue">' + item.value + '</span><span class="gsPValue"></span></div></li>');
+    list.append('<li id="' + correspAttr.name + '"><strong class="gsName">' + correspAttr.displayName + '</strong><div><span class="gsValue">' + item.level.toString() + '</span><span class="gsPValue"></span></div></li>');
     console.log("In handleGlobalStatsUpdate, targetLI not found, creating!");
   }
   else {
-    console.log(item.name.toLowerCase());
-    console.log(item.value);
+    console.log(correspAttr.name);
+    console.log(item.level.toString());
     console.log(targetLI);
     console.log("Warning: In handleGlobalStatsUpdate: Multiple TargetLIs found or unexpected find value.");
   }
