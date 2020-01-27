@@ -74,6 +74,7 @@ const User = mongoose.model('Users', userSchema);
 const GlobalAttributes = mongoose.model('GlobalAttributes', globalAttributesSchema);
 
 var newUserAttributes = [];
+var cardsArray = [];
 
 function BlankUser(username, pass) {
   this.username = username;
@@ -122,14 +123,13 @@ function initializeDatabase() {
   newGSArr.push(new BlankGlobalAttribute(-3, 0, false)); //Global Ascensions
   batchLoadDBObjects(GlobalAttributes, newGSArr);
 
-  //Load Upgrades
-  //var upgradesArray = jsonfile.readFileSync('./public/upgrades.json');
-  //batchLoadDBObjects(Upgrade, upgradesArray);
-
   checkListening();
 }
 
 function checkListening() {
+  //Load Upgrades
+  cardsArray = jsonfile.readFileSync('./public/json/cards.json');
+  //Load CSVs
   csvParse(fs.readFileSync(__dirname+'/public/csv/gAttributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
     console.log("[Info] Loading Global Attributes CSV!");
     gAttrs = output;
@@ -344,82 +344,115 @@ io.on('connection', function (socket) {
         setTimeout(emitUserUpdate, 2000, "user_" + username, username);
         break;
       case "upgradePurchase":
-        // let targetUpgrade = data.args.upgradeName;
-        // let foundUpgrade = upgradesList.filter(upgrade => upgrade.name == targetUpgrade)[0];
-        // if (foundUpgrade === undefined) {
-        //   //TODO: complain to client or at least in the server log
-        // }
-        // else {
-        //   mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, foundUpgrade: foundUpgrade}, function(arrRes, params) {
-        //     let foundUpgrade = params.foundUpgrade;
-        //     let upgradeOwned = arrRes[0].upgradesOwned.filter(upgrade => upgrade.name == foundUpgrade.name)[0];
-        //     if (upgradeOwned === undefined) {
-        //       //UPGRADE UNOWNED, CHECK FOR VALIDITY THEN ADD TO USER LIST
-        //     }
-        //     else {
-        //       let unlocked = true;
-        //       let unlockStructure = foundUpgrade.unlockStructure[upgradeOwned.level];
-        //       for (var i = 0; i < unlockStructure.criteriaNames.length; i++) {
-        //         let criteriaResponseValue;
-        //         switch(unlockStructure.criteriaTypes[i]) {
-        //           case "MaxCurrency":
-        //             let criteriaResponseValue = arrRes[0].currencyBags.filter(curr => curr.name == unlockStructure.criteriaNames[i])[0].maxAmount;
-        //             break;
-        //         }
-        //         if (criteriaResponseValue < unlockStructure.criteriaAmounts[i]) {
-        //           unlocked = false;
-        //         }
-        //       }
-        //       //console.log("Unlocked?: " + unlocked);
-        //       if (unlocked) { //then check if upgrade is possible
-        //         let costStructure = foundUpgrade.costStructure[upgradeOwned.level];
-        //         let newCBArray = arrRes[0].currencyBags;
-        //         let affordable = true;
-        //         for (var i = 0; i < costStructure.currencyNames.length; i++) {
-        //           //todo: wrap all this junk in try...catches to not crash when users send nonsense
-        //           let targetCurrency = newCBArray.filter(curr => curr.name == costStructure.currencyNames[i])[0];
-        //           if (targetCurrency.amount >= costStructure.currencyAmounts[i]) {
-        //             targetCurrency.amount = targetCurrency.amount - costStructure.currencyAmounts[i];
-        //           }
-        //           else {
-        //             affordable = false;
-        //           }
-        //         }
-        //         if (affordable) {
-        //           let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
-        //             let newItem = item;
-        //             newItem.level = item.name == foundUpgrade.name ? item.level + 1 : item.level;
-        //             return newItem;
-        //           });
-        //             // newCBArray[0].amount = 5;
-        //             // newUpgradesArray[0].level = 0;
-  
-        //           //Now handle adding the benefits of the upgrade:
-        //           let rewardStructure = foundUpgrade.rewardStructure[upgradeOwned.level-1];
-        //           for (var i = 0; i < rewardStructure.targetNames.length; i++) {
-        //             switch (rewardStructure.targetTypes[i]) {
-        //               case "MaxCurrency":
-        //                 let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
-        //                 rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
-        //                 break;
-        //               //TODO: add other cases
-        //             }
-        //           }
-  
-        //           params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
-        //             function(err, object) {
-        //               if(err){console.log(err);}
-        //               //else{console.log(object)}
-        //               this.emitUserUpdate("user_" + this.username, this.username);
-        //             }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-        //           params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundUpgrade.name});
-        //           // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
-        //         }
-        //       }
-        //     }
-        //   });
-        // }
+        let targetCardName = data.args.cardName;
+        let foundCard = cardsArray.filter(card => card.name == data.args.cardName);
+        if (foundCard === undefined) {
+          //TODO: complain to client or at least in the server log
+        }
+        else {
+          mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, card: foundCard}, function(arrRes, params) {
+            let attributesOwned = arrRes[0].attributes;
+            let currentCardLevel = attributesOwned.filter(attr => attr.id == params.card.attributeID)[0].level;
+            let unlocked = checkUnlockStructure(attributesOwned, params.card.unlockStructure, currentCardLevel);
+            if (unlocked) {
+              let appliedCosts = attemptApplyCostStructure(attributesOwned, params.card.costStructure, currentCardLevel);
+              if (appliedCosts !== undefined) {
+                let appliedRewards = attemptApplyRewardStructure(appliedCosts, params.card.rewardStructure, currentCardLevel);
+                params.mTools.updateObject(params.User, {username: params.username}, [{attributes: appliedRewards}],
+                  function(err, object) {
+                    if(err){console.log(err);}
+                    //else{console.log(object)}
+                    this.emitUserUpdate("user_" + this.username, this.username);
+                  }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+                
+                
+                
+                
+                // FIXME: THIS
+                //params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundCard.name});
+                
+                
+                
+                
+                
+                // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
+                
+                
+                //FIXME: THIS IS NOT YET UPDATED
+                // let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
+                //   let newItem = item;
+                //   newItem.level = item.name == foundCard.name ? item.level + 1 : item.level;
+                //   return newItem;
+                // });
+                //   // newCBArray[0].amount = 5;
+                //   // newUpgradesArray[0].level = 0;
+            
+                // //Now handle adding the benefits of the upgrade:
+                // let rewardStructure = foundCard.rewardStructure[upgradeOwned.level-1];
+                // for (var i = 0; i < rewardStructure.targetNames.length; i++) {
+                //   switch (rewardStructure.targetTypes[i]) {
+                //     case "MaxCurrency":
+                //       let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
+                //       rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
+                //       break;
+                //     //TODO: add other cases
+                //   }
+                // }
+            
+                // params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
+                //   function(err, object) {
+                //     if(err){console.log(err);}
+                //     //else{console.log(object)}
+                //     this.emitUserUpdate("user_" + this.username, this.username);
+                //   }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+                // params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundCard.name});
+                // // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
+              }
+              else {
+                console.log("cant afford")
+              }
+            }
+            else {
+              console.log("not unlocked")
+            }
+          });
+        }
         break;
     }
   });
 });
+
+function attemptApplyRewardStructure(appliedCosts, rewardStructure, currentLevel) {
+  //NOTE: Don't forget to increment the level of the card's attribute itself!
+  //I expect this will basically just copy the two below for the most part
+}
+
+function checkCostStructure(attributesOwned, costStructure, currentLevel) {
+  let newAttrArray = attributesOwned;
+  let affordable = true;
+  let costLevel = costStructure[currentLevel];
+  for (var i = 0; i < costLevel.attrID.length; i++) {
+    if (costLevel.isTempAttr) {
+      console.log("[CRITICAL] in checkCostStructure: costLevel.isTempAttr is true! Temp attribute purchases should not be querying the server!");
+    }
+    else {
+      let targetAttributeIndex = newAttrArray.findIndex(attr => attr.id == costLevel.attrID[i]);
+      newAttrArray[targetAttributeIndex].level -= costLevel.attrAmount[i];
+      affordable = newAttrArray[targetAttributeIndex].level >= 0 ? true : false;
+    }
+  }
+  return affordable ? newAttrArray : undefined;
+}
+
+function checkUnlockStructure(attributesOwned, unlockStructure, currentLevel) {
+  let unlocked = true;
+  let unlockLevel = unlockStructure[currentLevel];
+  for (var i = 0; i < unlockLevel.attrID.length; i++) {
+    let targetAttribute = attributesOwned.filter(attr => attr.id == unlockLevel.attrID[i])[0];
+    //NOTE: UNLOCK STRUCTURE IS EXCLUSIVELY PERTAINING TO MAXLEVEL AS ITS MORE TRUSTWORTHY THAN LEVEL
+    if (targetAttribute.maxLevel < unlockLevel.attrAmount[i]) {
+      unlocked = false;
+    }
+  }
+  return unlocked;
+}
