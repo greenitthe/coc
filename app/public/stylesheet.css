@@ -144,16 +144,19 @@ body {
 }
 
 #globalAttributes {
-  background-color: #ebaf76;
+  /*background-color: #ebaf76; the lighter orange color...*/
+  background-color: #168100;
 }
 
 #globalAttributes li {
-  background-color: #FFBE80;
+  /*background-color: #FFBE80; the lightest orange color...*/
+  background-color: #21BF00;
 }
 
 #globalAttributes>div {
   width: 100%;
-  background-color: #eb790a;
+  /*background-color: #eb790a; the orange color...*/
+  background-color: #24d100;
   text-align: center;
   color: white;
 }

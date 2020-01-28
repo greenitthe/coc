@@ -37,10 +37,12 @@ module.exports = {
   getObject: function(targetObjectModel, findCriteria, cbParameters, cb) {
     targetObjectModel.find(findCriteria).exec(function(err, resultArray) {
       if (err) {
-        console.log("[Warn] Error getting requested object with given criteria: " + findCriteria);
+        console.log("[Warn] Error getting requested object with given criteria:");
+        console.log(findCriteria)
       }
       else if(resultArray === null || resultArray.length === 0) {
-        console.log("[Warn] Could not find any objects based on given criteria: " + findCriteria);
+        console.log("[Warn] Could not find any objects based on given criteria:");
+        console.log(findCriteria);
         this.cb([], cbParameters);
       }
       else {

@@ -57,7 +57,8 @@ const userSchema = new Schema({
     id: Number,
     level: Number,
     maxLevel: Number,
-    visible: Boolean
+    visible: Boolean,
+    protected: Boolean
   }]
 });
 
@@ -199,7 +200,7 @@ function emitGlobalStatsToAll() {
 }
 
 //mTools.getObject: function(targetObjectModel, findCriteria, cbParameters, cb) {
-function emitUserUpdate(roomName, username, emissionName = "actionResponse") {
+function emitUserUpdate(roomName, username, emissionName = "actionResponse", alsoEmit = {}) {
   mTools.getObject(User, {username: username}, {emissionName: emissionName, roomName: roomName, username: username, ioObject: io, verboseLogging: verboseLogging}, function(resultArray, cbParams) {
     if (resultArray !== null) {
       if (resultArray.length > 1) {
@@ -210,7 +211,7 @@ function emitUserUpdate(roomName, username, emissionName = "actionResponse") {
         if (cbParams.verboseLogging) {
           console.log("[Verbose] Emitting update for user: " + cbParams.username);
         }
-        io.in(cbParams.roomName).emit(emissionName, resultArray[0]);
+        io.in(cbParams.roomName).emit(emissionName, {userData: resultArray[0], other: alsoEmit});
       }
     }
     else {
@@ -299,22 +300,39 @@ io.on('connection', function (socket) {
   });
 
 
-  socket.on('clickUpdate', function (data) {
-    //TODO: If last received clickUpdate from user within 50 seconds, ignore request
+  socket.on('gameStatusUpdate', function (data) {
+    let interval = 10000;
+    let clicksAllowedInInterval = 200;
+    let username;
+    //TODO: If last received update from user within 10 seconds, ignore request
     try {
-      let username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
+      username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
     } catch (e) {
       console.log("Error getting username from clickUpdate");
       console.log(e);
     }
-    let clicks = data.clicksLastMinute;
-    clicks = clicks > 600 ? 600 : clicks;
-    if(verboseLogging) {
-      console.log("-----");
-      console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == 600 ? " Rate Limiting to 600." : ""));
+    if (username !== undefined) {
+      let clicks = data.clicksSinceLast;
+      //CRITICAL TODO FIXME: VALIDATE data.attributes FUNCTION (Also use in attemptAction/upgradePurchaseAttempt - will send attributes along and will want to validate in a similar way before using the sent attrs as they will have the latest data on everything)
+      //validate function accepts the userAttributes array (within mTools.getObject) and the newAttrs array from the client, and will return the same array after mapping across it, looking up level updates in the newAttrs array for all VISIBLE, NON-PROTECTED attributes within userAttributes
+      let attributes = data.attributes;
+      clicks = clicks > clicksAllowedInInterval ? clicksAllowedInInterval : clicks;
+      if(verboseLogging) {
+        console.log("-----");
+        console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == clicksAllowedInInterval ? " Rate Limiting to " + clicksAllowedInInterval + "." : ""));
+      }
+      mTools.updateObject(GlobalAttributes, {id: -1}, [{ '$inc': {'level': clicks}}], function(err, object) {return;});
+      mTools.updateObject(User, {username: username}, [{attributes: attributes}], function (err, object) {
+        if(err){console.log(err);}
+        //else{console.log(object);}
+        this.emitUserUpdate("user_" + this.username, this.username, "clicksConfirmed", {clicks: clicks});
+      }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+      // socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
     }
-    mTools.updateObject(GlobalAttributes, {id: -1}, [{ '$inc': {'level': clicks}}], function(err, object) {return;});
-    socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
+    else {
+      console.log("[CRITICAL] RECEIVED GAMESTATUSUPDATE FROM UNPARSEABLE USERNAME. FULL KEYS LIST BELOW:");
+      console.log(Object.keys(io.sockets.adapter.sids[socket.id]));
+    }
   });
   
   socket.on('attemptAction', function (data) {
@@ -343,9 +361,9 @@ io.on('connection', function (socket) {
         });
         setTimeout(emitUserUpdate, 2000, "user_" + username, username);
         break;
-      case "upgradePurchase":
+      case "upgradePurchaseAttempt":
         let targetCardName = data.args.cardName;
-        let foundCard = cardsArray.filter(card => card.name == data.args.cardName);
+        let foundCard = cardsArray.filter(card => card.name == data.args.cardName)[0];
         if (foundCard === undefined) {
           //TODO: complain to client or at least in the server log
         }
@@ -357,56 +375,13 @@ io.on('connection', function (socket) {
             if (unlocked) {
               let appliedCosts = attemptApplyCostStructure(attributesOwned, params.card.costStructure, currentCardLevel);
               if (appliedCosts !== undefined) {
-                let appliedRewards = attemptApplyRewardStructure(appliedCosts, params.card.rewardStructure, currentCardLevel);
+                let appliedRewards = attemptApplyRewardStructure(appliedCosts, params.card.rewardStructure, currentCardLevel, params.card.attributeID);
                 params.mTools.updateObject(params.User, {username: params.username}, [{attributes: appliedRewards}],
                   function(err, object) {
                     if(err){console.log(err);}
                     //else{console.log(object)}
                     this.emitUserUpdate("user_" + this.username, this.username);
                   }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-                
-                
-                
-                
-                // FIXME: THIS
-                //params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundCard.name});
-                
-                
-                
-                
-                
-                // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
-                
-                
-                //FIXME: THIS IS NOT YET UPDATED
-                // let newUpgradesArray = arrRes[0].upgradesOwned.map(function(item) {
-                //   let newItem = item;
-                //   newItem.level = item.name == foundCard.name ? item.level + 1 : item.level;
-                //   return newItem;
-                // });
-                //   // newCBArray[0].amount = 5;
-                //   // newUpgradesArray[0].level = 0;
-            
-                // //Now handle adding the benefits of the upgrade:
-                // let rewardStructure = foundCard.rewardStructure[upgradeOwned.level-1];
-                // for (var i = 0; i < rewardStructure.targetNames.length; i++) {
-                //   switch (rewardStructure.targetTypes[i]) {
-                //     case "MaxCurrency":
-                //       let rewardCurrency = newCBArray.filter(curr => curr.name == rewardStructure.targetNames[i])[0];
-                //       rewardCurrency.maxAmount = rewardStructure.targetAmounts[i];
-                //       break;
-                //     //TODO: add other cases
-                //   }
-                // }
-            
-                // params.mTools.updateObject(params.User, {username: params.username}, [{currencyBags: newCBArray}, {upgradesOwned: newUpgradesArray}],
-                //   function(err, object) {
-                //     if(err){console.log(err);}
-                //     //else{console.log(object)}
-                //     this.emitUserUpdate("user_" + this.username, this.username);
-                //   }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-                // params.io.in("user_" + params.username).emit("upgradeConfirmed", {upgradeName: foundCard.name});
-                // // setTimeout(emitUserUpdate, 1000, "user_" + username, username);
               }
               else {
                 console.log("cant afford")
@@ -422,18 +397,37 @@ io.on('connection', function (socket) {
   });
 });
 
-function attemptApplyRewardStructure(appliedCosts, rewardStructure, currentLevel) {
+function attemptApplyRewardStructure(appliedCosts, rewardStructure, currentLevel, cardAttrID) {
   //NOTE: Don't forget to increment the level of the card's attribute itself!
   //I expect this will basically just copy the two below for the most part
+  let appliedRewards = appliedCosts;
+  let rewardLevel = rewardStructure[currentLevel];
+  appliedRewards.filter(attr => attr.id == cardAttrID)[0].level++;
+  for (var i = 0; i < rewardLevel.attrID.length; i++) {
+    if (rewardLevel.isAwardForMaxLevel[i]) {
+      // console.log(appliedRewards)
+      // console.log(rewardLevel)
+      // console.log(rewardLevel.attrID[i])
+      // console.log(appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i]))
+      appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i])[0].maxLevel += rewardLevel.attrAmount[i];
+    }
+    else {
+      appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i])[0].level += rewardLevel.attrAmount[i];
+    }
+  }
+  // console.log("appliedRewards")
+  // console.log(appliedRewards)
+  return appliedRewards;
 }
 
-function checkCostStructure(attributesOwned, costStructure, currentLevel) {
+function attemptApplyCostStructure(attributesOwned, costStructure, currentLevel) {
   let newAttrArray = attributesOwned;
   let affordable = true;
   let costLevel = costStructure[currentLevel];
   for (var i = 0; i < costLevel.attrID.length; i++) {
-    if (costLevel.isTempAttr) {
-      console.log("[CRITICAL] in checkCostStructure: costLevel.isTempAttr is true! Temp attribute purchases should not be querying the server!");
+    if (costLevel.isTempAttr[i]) {
+      console.log("[CRITICAL] in attemptApplyCostStructure: costLevel.isTempAttr is true! Temp attribute purchases should not be querying the server! costLevel below:");
+      dataLog(costLevel);
     }
     else {
       let targetAttributeIndex = newAttrArray.findIndex(attr => attr.id == costLevel.attrID[i]);
@@ -441,6 +435,9 @@ function checkCostStructure(attributesOwned, costStructure, currentLevel) {
       affordable = newAttrArray[targetAttributeIndex].level >= 0 ? true : false;
     }
   }
+  // console.log("affordable")
+  // console.log(affordable)
+  // console.log(newAttrArray)
   return affordable ? newAttrArray : undefined;
 }
 
@@ -454,5 +451,7 @@ function checkUnlockStructure(attributesOwned, unlockStructure, currentLevel) {
       unlocked = false;
     }
   }
+  // console.log("unlocked")
+  // console.log(unlocked)
   return unlocked;
 }

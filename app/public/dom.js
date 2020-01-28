@@ -147,8 +147,8 @@ function determineUpdateAttrTextOrMakeNew(targetLI, list, item, correspAttrInfo,
 }
 
 function refreshRegionAndUnblock() {
-  $('#gamePage').unblock();
   refreshRegion();
+  $('#gamePage').unblock();
 }
 
 function refreshRegionAttributes() {

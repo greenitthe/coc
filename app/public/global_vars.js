@@ -33,23 +33,28 @@ var socket; //the socket communicated on - assigned in sockets.js
 
 //Clicks Counter (sent in 1 minute intervals)
 var clickCounter = 0;
-var timeLastSentClicks = new Date();
+var timeLastSentStatus = new Date();
 
 //Character Data
-let loadedCData = Cookies.get("cData");
-var characterData = {
-  attributes: [],
-  tempAttributes: []
-};
-if (loadedCData !== undefined && resetTemplates === false) {
-  console.log("Character Data loaded from cookies.");
-  characterData = JSON.parse(loadedCData);
-  loadStatus--;
-  console.log("loadStatus: " + loadStatus);
+let loadedCData;
+var characterData;
+function resetCharacterData() {
+  loadedCData = Cookies.get("cData");
+  characterData = {
+    attributes: [],
+    tempAttributes: []
+  };
+  if (loadedCData !== undefined && resetTemplates === false) {
+    console.log("Character Data loaded from cookies.");
+    characterData = JSON.parse(loadedCData);
+    loadStatus--;
+    console.log("loadStatus: " + loadStatus);
+  }
+  else {
+    papaParseCSV(updateTAttrInfo, "tempAttributes");
+  }
 }
-else {
-  papaParseCSV(updateTAttrInfo, "tempAttributes");
-}
+resetCharacterData();
 
 var cards = [];
 //Note: If JSON not loaded, card.json needs to be validated as it is most likely misshapen somewhere

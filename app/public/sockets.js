@@ -68,7 +68,7 @@ function logoutUser() {
   Cookies.remove('cData');
   loadStatus = 2;
   activeRegion = "Core";
-  characterData = { attributes: [], cards: [] };
+  resetCharacterData();
   //TODO: Get these to work as intended
   // loadedRegions = undefined;
   //regions = $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });;
@@ -78,18 +78,17 @@ function logoutUser() {
   setTimeout(function() {showUsername()}, 100);
 }
 
-function checkSendClicks() {
+function saveGameStatus(force) {
   let newDate = new Date();
-  console.log("Checking if should send clicks");
-  if (newDate - timeLastSentClicks > 60000) {
-    if (clickCounter > 0) {
-      console.log("Sending clicks update: " + clickCounter);
-      socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
-    }
-    timeLastSentClicks = newDate + 30000;
+  let interval = 15000;
+  console.log("Checking if should send game status");
+  if (force || newDate - timeLastSentStatus > interval) {
+    console.log("Saving game status...");
+    socket.emit('gameStatusUpdate', {attributes: characterData.attributes, clicksSinceLast: clickCounter});
+    timeLastSentStatus = newDate;
   }
   else {
-    console.log("Time till next click update sent: " + ((60000-(newDate - timeLastSentClicks))/1000));
+    console.log("Time till next save game update sent: " + ((interval-(newDate - timeLastSentStatus))/1000));
   }
 }
 
@@ -125,7 +124,7 @@ function connectSocket() {
   socket.on('actionResponse', function (data) {
     console.log("Received action response");
     //console.log(data);
-    updateCharacterData(data);
+    updateCharacterData(data.userData);
   });
 
 
@@ -144,20 +143,21 @@ function connectSocket() {
 
   socket.on('loginSuccess', function (data) {
     console.log("Login verified! Displaying user info.");
-    console.log(data);
-    Cookies.set('username', data.username);
-    Cookies.set('cloudsavePass', data.pass);
+    console.log(data.userData);
+    Cookies.set('username', data.userData.username);
+    Cookies.set('cloudsavePass', data.userData.pass);
     $("#userInfoUsername").text(Cookies.get("username"));
-    updateCharacterData(data);
+    updateCharacterData(data.userData);
     showUserInfo();
     loadStatus--;
     console.log("Load Status: " + loadStatus);
   });
 
   socket.on('clicksConfirmed', function (data) {
-    console.log(data.message);
+    console.log(data.other.clicks);
     clickCounter = 0;
     updateClickCounter();
+    updateCharacterData(data.userData);
   });
 
   //Event Detection

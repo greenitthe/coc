@@ -1,4 +1,4 @@
-setInterval(checkSendClicks, 10000);
+setInterval(saveGameStatus, 5000);
 
 function incrementClicks() {
   clickCounter = clickCounter++ >= 600 ? 600 : clickCounter++;
@@ -50,6 +50,7 @@ function buttonUsed(type, name) {
       let canAfford = checkAffordableCostStructure(buttonCard.costStructure[cardAttr.level]);
       if (canAfford) {
         console.log("CanAfford upgrade, sending purchase attempt.");
+        
         sendAction("upgradePurchaseAttempt", {cardName: name});
       }
       //upon receipt of action response saveGame and refreshRegion
@@ -75,11 +76,16 @@ function buttonUsed(type, name) {
   }
 }
 
-function lookupAndSpendCurrency(spendTarget, spendAmount) {
-
-}
-
 function changeActiveRegion(targetRegion) {
+  if (activeRegion == targetRegion) {
+    console.log("Not changing region - its the same region")
+    return;
+  }
+  $('#gamePage').block({ message: "Loading region... Waiting for server...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
+  $("#regionAttributesList").empty();
+  //$("#regionUpgradesList").empty(); //WHAT IS THIS UL FOR?
+  $("#regionCardsList").empty();
+  
   $("#sidebar ul>li.active").removeClass("active");
   let navLink;
   if (targetRegion === "Core") {
@@ -93,7 +99,6 @@ function changeActiveRegion(targetRegion) {
   activeRegion = targetRegion;
   Cookies.set("activeRegion", activeRegion);
   $("#regionName").text(activeRegion);
-  $('#gamePage').block({ message: "Loading region... Waiting for server...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
   queueAfterLoadStatus(refreshRegionAndUnblock, {});
 }
 
