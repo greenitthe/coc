@@ -1,5 +1,6 @@
 const verboseLogging = false;
 const updateInterval = 1000;
+const reinitDatabase = true;
 
 const servPort = 80;
 const mongoosePath = "mongodb://127.0.0.1/coc";
@@ -7,7 +8,6 @@ const mongoosePath = "mongodb://127.0.0.1/coc";
 console.log("[Info] Server starting...");
 
 //Imports & Requires
-const Confirm = require('prompt-confirm');
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
@@ -110,7 +110,11 @@ function batchLoadDBObjects(schemaObject, arrayOfSourceObjects) {
 //Should not have to be run every time - just when want a fresh DB.
 function initializeDatabase() {
   //Drop collections
-  mTools.dropCollection(GlobalAttributes, "GlobalAttributes", {}, function(cbParams) { console.log("[Info] Collection  GlobalAttributes dropped!"); });
+  try {
+    mTools.dropCollection(GlobalAttributes, "GlobalAttributes", {}, function(cbParams) { console.log("[Info] Collection GlobalAttributes dropped!"); });
+  } catch (e) {
+    console.log("[Notice] GlobalAttributes collection not dropped.");
+  }
   try {
     mTools.dropCollection(User, "Users", {}, function(cbParams) { console.log("[Info] Collection Users dropped!"); });
   } catch (e) {
@@ -135,20 +139,20 @@ function checkListening() {
     console.log("[Info] Loading Global Attributes CSV!");
     gAttrs = output;
     finishedLoadingData--;
-    console.log(gAttrs);
+    // console.log(gAttrs);
   });
   csvParse(fs.readFileSync(__dirname+'/public/csv/attributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
     console.log("[Info] Loading Attributes CSV!");
     attrs = output;
     finishedLoadingData--;
-    console.log(attrs);
+    // console.log(attrs);
   });
   csvParse(fs.readFileSync(__dirname+'/newUserAttributes.csv'), {delimiter: '|', columns: true, cast: true}, function (err, output) {
     console.log("[Info] Loading New User Attributes CSV!");
     newUserAttributes = output;
     finishedLoadingData--;
-    console.log(newUserAttributes);
-  });;
+    // console.log(newUserAttributes);
+  });
 
   startListening();
 }
@@ -164,24 +168,12 @@ function startListening() {
   server.listen(servPort);
 }
 
-//*/
+if (reinitDatabase) {
+  initializeDatabase();
+}
+
 checkListening();
 setInterval(emitGlobalStatsToAll, updateInterval);
-/*/
-//*
-const prompt = new Confirm('[CRITICAL] (Re-)Initialize Database? This will wipe any existing accounts, stats, etc!');
-prompt.ask(function(answer) {
-  if (answer) {
-    console.log("[Notice] (Re-)Initializing Database...");
-    initializeDatabase();
-  }
-  else {
-    console.log("[Notice] Loading Existing Database...");
-  }
-  //Send updates to all connected at given interval (default 10/s)
-  checkListening();
-  setInterval(emitGlobalStatsToAll, updateInterval);
-});//*/
 
 function emitGlobalStatsToAll() {
   if (verboseLogging === true) {
@@ -303,36 +295,31 @@ io.on('connection', function (socket) {
   socket.on('gameStatusUpdate', function (data) {
     let interval = 10000;
     let clicksAllowedInInterval = 200;
-    let username;
     //TODO: If last received update from user within 10 seconds, ignore request
-    try {
-      username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
-    } catch (e) {
-      console.log("Error getting username from clickUpdate");
-      console.log(e);
+    // try {
+    //   username = Object.keys(io.sockets.adapter.sids[socket.id])[0].substr(5);
+    // } catch (e) {
+    //   console.log("Error getting username from clickUpdate");
+    //   console.log(e);
+    // }
+    let username = data.username;
+    let pass = data.pass;
+    let clicks = data.clicksSinceLast;
+    //CRITICAL TODO FIXME: VALIDATE data.attributes FUNCTION (Also use in attemptAction/upgradePurchaseAttempt - will send attributes along and will want to validate in a similar way before using the sent attrs as they will have the latest data on everything)
+    //validate function accepts the userAttributes array (within mTools.getObject) and the newAttrs array from the client, and will return the same array after mapping across it, looking up level updates in the newAttrs array for all VISIBLE, NON-PROTECTED attributes within userAttributes
+    let attributes = data.attributes;
+    clicks = clicks > clicksAllowedInInterval ? clicksAllowedInInterval : clicks;
+    if(verboseLogging) {
+      console.log("-----");
+      console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == clicksAllowedInInterval ? " Rate Limiting to " + clicksAllowedInInterval + "." : ""));
     }
-    if (username !== undefined) {
-      let clicks = data.clicksSinceLast;
-      //CRITICAL TODO FIXME: VALIDATE data.attributes FUNCTION (Also use in attemptAction/upgradePurchaseAttempt - will send attributes along and will want to validate in a similar way before using the sent attrs as they will have the latest data on everything)
-      //validate function accepts the userAttributes array (within mTools.getObject) and the newAttrs array from the client, and will return the same array after mapping across it, looking up level updates in the newAttrs array for all VISIBLE, NON-PROTECTED attributes within userAttributes
-      let attributes = data.attributes;
-      clicks = clicks > clicksAllowedInInterval ? clicksAllowedInInterval : clicks;
-      if(verboseLogging) {
-        console.log("-----");
-        console.log("[Verbose] User (" + username + ") sent " + clicks + " clicks accumulated over the last minute." + (clicks == clicksAllowedInInterval ? " Rate Limiting to " + clicksAllowedInInterval + "." : ""));
-      }
-      mTools.updateObject(GlobalAttributes, {id: -1}, [{ '$inc': {'level': clicks}}], function(err, object) {return;});
-      mTools.updateObject(User, {username: username}, [{attributes: attributes}], function (err, object) {
-        if(err){console.log(err);}
-        //else{console.log(object);}
-        this.emitUserUpdate("user_" + this.username, this.username, "clicksConfirmed", {clicks: clicks});
-      }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-      // socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
-    }
-    else {
-      console.log("[CRITICAL] RECEIVED GAMESTATUSUPDATE FROM UNPARSEABLE USERNAME. FULL KEYS LIST BELOW:");
-      console.log(Object.keys(io.sockets.adapter.sids[socket.id]));
-    }
+    mTools.updateObject(GlobalAttributes, {id: -1}, [{ '$inc': {'level': clicks}}], function(err, object) {return;});
+    mTools.updateObject(User, {username: username, pass: pass}, [{attributes: attributes}], function (err, object) {
+      if(err){console.log(err);}
+      //else{console.log(object);}
+      this.emitUserUpdate("user_" + this.username, this.username, "clicksConfirmed", {clicks: clicks});
+    }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+    // socket.emit('clicksConfirmed', { message: "Confirmed " + clicks + " clicks." });
   });
   
   socket.on('attemptAction', function (data) {
@@ -371,25 +358,38 @@ io.on('connection', function (socket) {
           mTools.getObject(User, {username: username}, {io: io, mTools: mTools, User: User, username: username, card: foundCard}, function(arrRes, params) {
             let attributesOwned = arrRes[0].attributes;
             let currentCardLevel = attributesOwned.filter(attr => attr.id == params.card.attributeID)[0].level;
-            let unlocked = checkUnlockStructure(attributesOwned, params.card.unlockStructure, currentCardLevel);
-            if (unlocked) {
-              let appliedCosts = attemptApplyCostStructure(attributesOwned, params.card.costStructure, currentCardLevel);
-              if (appliedCosts !== undefined) {
-                let appliedRewards = attemptApplyRewardStructure(appliedCosts, params.card.rewardStructure, currentCardLevel, params.card.attributeID);
-                params.mTools.updateObject(params.User, {username: params.username}, [{attributes: appliedRewards}],
-                  function(err, object) {
-                    if(err){console.log(err);}
-                    //else{console.log(object)}
-                    this.emitUserUpdate("user_" + this.username, this.username);
-                  }.bind({emitUserUpdate: emitUserUpdate, username: username}));
-              }
-              else {
-                console.log("cant afford")
-              }
+            let appliedCosts = attemptApplyCostStructure(attributesOwned, params.card.costStructure, currentCardLevel);
+            if (appliedCosts !== undefined) {
+              let appliedRewards = attemptApplyUpgradeStructure(appliedCosts, params.card.upgradeStructure, currentCardLevel, params.card.attributeID);
+              params.mTools.updateObject(params.User, {username: params.username}, [{attributes: appliedRewards}],
+                function(err, object) {
+                  if(err){console.log(err);}
+                  //else{console.log(object)}
+                  this.emitUserUpdate("user_" + this.username, this.username);
+                }.bind({emitUserUpdate: emitUserUpdate, username: username}));
             }
             else {
-              console.log("not unlocked")
+              console.log("cant afford")
             }
+            // let unlocked = checkUnlockStructure(attributesOwned, params.card.unlockStructure, currentCardLevel);
+            // if (unlocked) {
+            //   let appliedCosts = attemptApplyCostStructure(attributesOwned, params.card.costStructure, currentCardLevel);
+            //   if (appliedCosts !== undefined) {
+            //     let appliedRewards = attemptApplyUpgradeStructure(appliedCosts, params.card.upgradeStructure, currentCardLevel, params.card.attributeID);
+            //     params.mTools.updateObject(params.User, {username: params.username}, [{attributes: appliedRewards}],
+            //       function(err, object) {
+            //         if(err){console.log(err);}
+            //         //else{console.log(object)}
+            //         this.emitUserUpdate("user_" + this.username, this.username);
+            //       }.bind({emitUserUpdate: emitUserUpdate, username: username}));
+            //   }
+            //   else {
+            //     console.log("cant afford")
+            //   }
+            // }
+            // else {
+            //   console.log("not unlocked")
+            // }
           });
         }
         break;
@@ -397,23 +397,25 @@ io.on('connection', function (socket) {
   });
 });
 
-function attemptApplyRewardStructure(appliedCosts, rewardStructure, currentLevel, cardAttrID) {
+function attemptApplyUpgradeStructure(appliedCosts, upgradeStructure, currentLevel, cardAttrID) {
   //NOTE: Don't forget to increment the level of the card's attribute itself!
   //I expect this will basically just copy the two below for the most part
   let appliedRewards = appliedCosts;
-  let rewardLevel = rewardStructure[currentLevel];
+  let rewardLevel = upgradeStructure[currentLevel];
   appliedRewards.filter(attr => attr.id == cardAttrID)[0].level++;
   for (var i = 0; i < rewardLevel.attrID.length; i++) {
+    let aRIndex = appliedRewards.findIndex(attr => attr.id == rewardLevel.attrID[i]);
     if (rewardLevel.isAwardForMaxLevel[i]) {
       // console.log(appliedRewards)
       // console.log(rewardLevel)
       // console.log(rewardLevel.attrID[i])
       // console.log(appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i]))
-      appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i])[0].maxLevel += rewardLevel.attrAmount[i];
+      appliedRewards[aRIndex].maxLevel += rewardLevel.attrAmount[i];
     }
     else {
-      appliedRewards.filter(attr => attr.id == rewardLevel.attrID[i])[0].level += rewardLevel.attrAmount[i];
+      appliedRewards[aRIndex].level += rewardLevel.attrAmount[i];
     }
+    appliedRewards[aRIndex].visible = true;
   }
   // console.log("appliedRewards")
   // console.log(appliedRewards)

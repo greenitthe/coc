@@ -1,2 +1,4 @@
 id|name|displayName|region|sortOrder|description|level|maxLevel
-0|condenserProgress|Condenser Progress|core|0|Progress towards condensing energy.|0|20
+0|boilerProgress|Boiler Progress|core|0|Progress towards creating steam.|0|20
+1|turbineSpeed|Turbine Speed|core|1|Speed of turbine.|0|10
+2|waterLastTicked|Water Last Ticked|core|2|Time last added water.|0|-1

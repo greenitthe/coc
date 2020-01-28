@@ -1,15 +1,15 @@
 nav#sidebar
-  div.sidebar-header.sidebarCollapse
+  div#sidebarHeader.sidebar-header.sidebarCollapse
     h3
       a
         ="Co-Op Clicker"
     strong
       a
         ="COC"
-  ul.list-unstyled.components
+  ul#sidebarItems.list-unstyled.components
     li.active
       button#coreButton.sidebarbutton(onclick="changeActiveRegion('Core')")
-        i.fa.fa-eercast
+        i.iconify(data-icon="fa-eercast")
         ="Core"
     li.flow-bottom
       div.dropup
@@ -21,7 +21,7 @@ nav#sidebar
             a.sidebarButton.active(href="#")
               ="Co-Op Clicker"
         a.sidebarButton.active.dropdown-toggle(href="#otherSubmenu" data-toggle="collapse" aria-expanded="false")
-          i.fa.fa-code-fork
+          i.iconify(data-icon="fa-code-fork")
           ="Projects"
       div#userInfo.userSection.initiallyHidden.animated.slideInUp.allowTextSelect
         strong

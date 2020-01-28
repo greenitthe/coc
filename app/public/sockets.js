@@ -6,7 +6,7 @@ function updateCharacterData(data) {
 }
 
 function attemptLogin(username, pass) {
-  if (!username || !pass) { console.log("ERROR: ATTEMPTING LOGIN WITH UNDEFINED USER (" + username + ") OR PASS (" + pass + ")! ABORTING"); return; }
+  if (!username || !pass || username === undefined || pass === undefined) { console.log("ERROR: ATTEMPTING LOGIN WITH UNDEFINED USER (" + username + ") OR PASS (" + pass + ")! ABORTING"); return; }
   socket.emit('verifyLogin', {username: username, pass: pass});
 }
 
@@ -63,18 +63,11 @@ function parseUserForm() {
 function logoutUser() {
   console.log("User requested logout. Deleting cookies.");
   socket.emit('logoutUser', { username: Cookies.get('username')});
-  Cookies.remove('username');
-  Cookies.remove('cloudsavePass');
-  Cookies.remove('cData');
+  saveGameStatus(true);
+  clearCookies();
   loadStatus = 2;
   activeRegion = "Core";
   resetCharacterData();
-  //TODO: Get these to work as intended
-  // loadedRegions = undefined;
-  //regions = $.getJSON('region_templates.json', function (json) { console.log("Regions JSON Loaded"); regions = json; loadStatus--; console.log("Load Status: " + loadStatus); });;
-  console.log("Sending clicks update: " + clickCounter);
-  socket.emit('clickUpdate', {clicksLastMinute: clickCounter});
-  // createAnnouncement("ann_usernameNotification", "Successfully Logged Out.", false);
   setTimeout(function() {showUsername()}, 100);
 }
 
@@ -84,7 +77,7 @@ function saveGameStatus(force) {
   console.log("Checking if should send game status");
   if (force || newDate - timeLastSentStatus > interval) {
     console.log("Saving game status...");
-    socket.emit('gameStatusUpdate', {attributes: characterData.attributes, clicksSinceLast: clickCounter});
+    socket.emit('gameStatusUpdate', {username: Cookies.get("username"), pass: Cookies.get("cloudsavePass"), attributes: characterData.attributes, clicksSinceLast: clickCounter});
     timeLastSentStatus = newDate;
   }
   else {

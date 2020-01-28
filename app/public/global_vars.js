@@ -1,7 +1,18 @@
 //Toggles whether looks at cookies for region information or from the blank template.
-const resetTemplates = true;
+const resetCookies = true;
 // $('#gamePage').block({ message: "Loading assets...", css: {backgroundColor: 'transparent', border: 'none', color: 'white'} });
 var loadStatus = 5; //on 0 will enable game, each critical component should subtract 1
+
+function clearCookies() {
+  Cookies.remove("activeRegion");
+  Cookies.remove("username");
+  Cookies.remove("cloudsavePass");
+  Cookies.remove("cData");
+  
+}
+if (resetCookies) {
+  clearCookies();
+}
 
 //Color Stuff
 //standardColors:
@@ -44,7 +55,7 @@ function resetCharacterData() {
     attributes: [],
     tempAttributes: []
   };
-  if (loadedCData !== undefined && resetTemplates === false) {
+  if (loadedCData !== undefined && resetCookies === false) {
     console.log("Character Data loaded from cookies.");
     characterData = JSON.parse(loadedCData);
     loadStatus--;
@@ -117,7 +128,7 @@ function saveGame() {
 // //Cookies.get("activeRegion") !== undefined ? Cookies.get("activeRegion") : "Singularity";
 // let loadedRegions = Cookies.get("regions");
 // var regions = [];
-// if (loadedRegions !== undefined && resetTemplates === false) {
+// if (loadedRegions !== undefined && resetCookies === false) {
 //   console.log("Regions loaded from cookies");
 //   regions = JSON.parse(loadedRegions);
 //   loadStatus--;

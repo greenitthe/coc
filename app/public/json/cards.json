@@ -1,33 +1,5 @@
 [
   {
-    "attributeID": 13,
-    "name": "condenser",
-    "region": "core",
-    "type": "multiclickGatherer",
-    "relevantTAttrID": 0,
-    "buttonText": "Condense!",
-    "costStructure": [
-      {
-        "attrID": [0],
-        "isTempAttr": [true],
-        "attrAmount": [5]
-      }
-    ],
-    "unlockStructure": [
-      {
-        "attrID": [11],
-        "attrAmount": [5]
-      }
-    ],
-    "rewardStructure": [
-      {
-        "attrID": [11],
-        "isAwardForMaxLevel": [false],
-        "attrAmount": [1]
-      }
-    ]
-  },
-  {
     "attributeID": 10,
     "name": "core",
     "region": "core",
@@ -36,36 +8,135 @@
     "buttonText": "Upgrade",
     "costStructure": [
       {
-        "attrID": [11],
+        "attrID": [13],
         "isTempAttr": [false],
         "attrAmount": [5]
       },
       {
-        "attrID": [11, 12],
+        "attrID": [14],
         "isTempAttr": [false],
-        "attrAmount": [1000, 10]
+        "attrAmount": [5]
       }
     ],
-    "unlockStructure": [
+    "upgradeStructure": [
       {
-        "attrID": [11],
-        "attrAmount": [5]
+        "attrID": [12, 14, 2],
+        "isAwardForMaxLevel": [true, true, false],
+        "isTempAttr": [false, false, false],
+        "attrAmount": [1, 5, 1]
       },
       {
-        "attrID": [11, 12],
-        "attrAmount": [20, 1]
+        "attrID": [14, 2],
+        "isAwardForMaxLevel": [true, false],
+        "isTempAttr": [false, false],
+        "attrAmount": [15, 1]
+      }
+    ]
+  },
+  {
+    "attributeID": 11,
+    "name": "boiler",
+    "region": "core",
+    "type": "multiclickConverter",
+    "relevantTAttrID": 0,
+    "buttonText": "Stoke",
+    "costStructure": [
+      {
+        "attrID": [14],
+        "isTempAttr": [false],
+        "attrAmount": [20]
       }
     ],
     "rewardStructure": [
       {
-        "attrID": [11],
-        "isAwardForMaxLevel": [true],
-        "attrAmount": [95]
-      },
+        "attrID": [13],
+        "isAwardForMaxLevel": [false],
+        "isTempAttr": [false],
+        "attrAmount": [1]
+      }
+    ],
+    "convertStructure": [
       {
-        "attrID": [""],
-        "isAwardForMaxLevel": [true],
-        "attrAmount": [0]
+        "attrID": [15],
+        "isTempAttr": [false],
+        "attrAmount": [5]
+      }
+    ],
+    "upgradeStructure": [
+      {
+        "attrID": [2, 0],
+        "isAwardForMaxLevel": [false, true],
+        "isTempAttr": [false, true],
+        "attrAmount": [1, -10]
+      }
+    ]
+  },
+  {
+    "attributeID": 12,
+    "name": "turbine",
+    "region": "core",
+    "type": "spooler",
+    "relevantTAttrID": 1,
+    "buttonText": "Release Steam",
+    "costStructure": [
+      {
+        "attrID": [13],
+        "isTempAttr": [false],
+        "attrAmount": [100]
+      }
+    ],
+    "convertStructure": [
+      {
+        "attrID": [13],
+        "isTempAttr": [false],
+        "attrAmount": [1]
+      }
+    ],
+    "rewardStructure": [
+      {
+        "attrID": [14],
+        "isAwardForMaxLevel": [false],
+        "isTempAttr": [false],
+        "attrAmount": [1]
+      }
+    ],
+    "upgradeStructure": [
+      {
+        "attrID": [],
+        "isAwardForMaxLevel": [],
+        "isTempAttr": [],
+        "attrAmount": []
+      }
+    ]
+  },
+  {
+    "attributeID": 15,
+    "name": "water",
+    "region": "core",
+    "type": "passive",
+    "relevantTAttrID": 2,
+    "buttonText": "n/a",
+    "costStructure": [
+      {
+        "attrID": [],
+        "isTempAttr": [],
+        "attrAmount": []
+      }
+    ],
+    "rewardStructure": [
+      {
+        "attrID": [15],
+        "isAwardForMaxLevel": [false],
+        "isTempAttr": [false],
+        "attrAmount": [1]
+      }
+    ],
+    "upgradeStructure": [
+      {
+        "attrID": [],
+        "isAwardForMaxLevel": [],
+        "isTempAttr": [],
+        "attrAmount": []
       }
     ]
   }

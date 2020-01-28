@@ -1,7 +1,7 @@
-id|name|displayName|region|sortOrder|description|barToDisplayIn
+id|name|displayName|regions|sortOrder|description|barToDisplayIn
 0|lifetimeClicks|User Lifetime Clicks|settings|0|Total clicks across user's entire lifetime.|badges
 1|playtime|User Playtime|settings|1|Total playtime across user's entire lifetime.|n/a
-2|placeholder|placeholder|placeholder|-1|placeholder|n/a
+2|upgrades|Upgrades Purchased|settigns|2|Total number of upgrades purchased across all ascensions.|n/a
 3|placeholder|placeholder|placeholder|-1|placeholder|n/a
 4|placeholder|placeholder|placeholder|-1|placeholder|n/a
 5|placeholder|placeholder|placeholder|-1|placeholder|n/a
@@ -10,6 +10,8 @@ id|name|displayName|region|sortOrder|description|barToDisplayIn
 8|placeholder|placeholder|placeholder|-1|placeholder|n/a
 9|placeholder|placeholder|placeholder|-1|placeholder|n/a
 10|core|Core Level|Core|0|Upgrade your Core to gain access to more regions and features.|badges
-11|energy|Energy|Core|1|Used to upgrade and power various Core features.|currencies
-12|matter|Matter|Core|2|Used to upgrade and unlock new regions.|currencies
-13|condenser|Energy Condenser|Core|3|Upgrade your Energy Condenser to collect more Energy faster.|badges
+11|boiler|Boiler|Core|1|Boils Water into Steam. Stoke to add fuel and create steam.|badges
+12|turbine|Turbine|Core|2|Release Steam into Turbine to trigger Energy generation.|badges
+13|steam|Steam|Core|1|Used to upgrade and power various Core features.|currencies
+14|energy|Energy|Core,Shaft|2|Used to upgrade and power various machines.|currencies
+15|water|Water|Core|0|Used to generate steam. Automatically accumulates over time.|currencies

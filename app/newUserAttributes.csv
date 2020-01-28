@@ -9,7 +9,9 @@ id|level|maxLevel|visible|protected
 7|-1|-1|false|false
 8|-1|-1|false|false
 9|-1|-1|false|false
-10|0|2|true|true
-11|0|5|true|false
-12|0|0|false|false
-13|0|1|true|true
+10|0|4|true|true
+11|0|1|true|true
+12|0|0|false|true
+13|0|10|true|false
+14|0|5|false|false
+15|50|50|true|false

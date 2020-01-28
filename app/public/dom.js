@@ -153,12 +153,15 @@ function refreshRegionAndUnblock() {
 
 function refreshRegionAttributes() {
   console.log("Refreshing Region Attributes");
-  attrInfo.filter(attr => attr.region.toLowerCase() === activeRegion.toLowerCase()).forEach(function(item) {
+  attrInfo.filter(attr => attr.regions.toLowerCase().includes(activeRegion.toLowerCase())).forEach(function(item) {
     // console.log("refresh region attributes")
     // console.log(item);
     switch (item.barToDisplayIn) {
       case "currencies":
         let targetAttr = characterData.attributes.filter(attr => attr.id === item.id)[0];
+        // console.log(characterData.attributes)
+        // console.log(item.id)
+        // console.log(targetAttr)
         if (targetAttr.visible == true) {
           handleCurrenciesBarItem(item, targetAttr);
         }
@@ -180,25 +183,36 @@ function handleCurrenciesBarItem(attrInfoObject, cDataAttrObject) {
   determineUpdateAttrTextOrMakeNew(targetLI, cList, cDataAttrObject, attrInfoObject, ".cValue", true);
 }
 
-function formatUpgradeCost(cardLevel, card) {
+// function formatUpgradeCost(cardLevel, card) {
+//   let result = "";
+//   let isFirst = true;
+//   let costItem = card.costStructure[cardLevel];
+//   for (var i = 0; i < costItem.attrID.length; i++) {
+//     if (isFirst) { isFirst = false; }
+//     else { result += ", "; }
+//     let attrID = costItem.attrID[i];
+//     let isTempAttr = costItem.isTempAttr[i];
+//     let attrAmount = costItem.attrAmount[i];
+//     let costItemName = costItem.isTempAttr[i] ? characterData.tempAttributes.filter(attr => attr.id === costItem.attrID[i])[0].displayName : attrInfo.filter(attr => attr.id === costItem.attrID[i])[0].displayName;
+//     result += costItem.attrAmount[i] + " " + costItemName;
+//   }
+//   return "(" + result + ")"
+// }
+
+function formatButtonCost(cardLevel, structure) {
   let result = "";
   let isFirst = true;
-  let costItem = card.costStructure[cardLevel];
+  let costItem = structure[cardLevel];
   for (var i = 0; i < costItem.attrID.length; i++) {
     if (isFirst) { isFirst = false; }
     else { result += ", "; }
     let attrID = costItem.attrID[i];
     let isTempAttr = costItem.isTempAttr[i];
     let attrAmount = costItem.attrAmount[i];
-    // console.log(costItem)
-    // console.log(attrID)
-    // console.log(isTempAttr)
-    // console.log(attrAmount)
-    // console.log(characterData.tempAttributes)
     let costItemName = costItem.isTempAttr[i] ? characterData.tempAttributes.filter(attr => attr.id === costItem.attrID[i])[0].displayName : attrInfo.filter(attr => attr.id === costItem.attrID[i])[0].displayName;
-    result += costItem.attrAmount[i] + " " + costItemName;
+    result += "-" + costItem.attrAmount[i] + " " + costItemName;
   }
-  return "(" + result + ")"
+  return result;
 }
 
 function refreshRegionCards() {
@@ -207,40 +221,74 @@ function refreshRegionCards() {
   var cardList = $(cardListSelector);
   var regionCardsArray = cards.filter(card => card.region.toLowerCase() === activeRegion.toLowerCase());
   regionCardsArray.forEach(function (card) {
-    let content = "";
-    let targetLI = cardList.find("#" + card.name);
     //cardOwnAttr is the attributes of the card's attribute - just CARD ATTR level, maxLevel and attr ID, not relevant until I display them (and an upgrade button for the card itself)
     let cardOwnAttr = characterData.attributes.filter(attr => attr.id === card.attributeID)[0];
-    let cardAttr = attrInfo.filter(attr => attr.id === card.attributeID)[0];
-    let cardTAttr = characterData.tempAttributes.filter(attr => attr.id === card.relevantTAttrID)[0];
-    let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel;
-    //Below is not presently needed. May add tooltips or something in the future so leaving for now...
-    // let targetTAttrInfo = tAttrInfo.filter(attr => attr.id === card.relevantTAttrID)[0];
-    switch(card.type) {
-      case "multiclickGatherer": //read: progress bar that fills up to generate item
-        content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + "</span></button><div class='progressWrapper'><div class='progressLeftLabel hidden'><span>" + " " + "</span></div><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + cardTAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (cardTAttr.maxLevel - cardTAttr.level) + "</span></div></div><div class='progressRightLabel'><span>" + cardTAttr.maxLevel + "</span></div></div></li>";
-        pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
-        pBarPercent = ((cardTAttr.maxLevel - (cardTAttr.maxLevel - cardTAttr.level))/cardTAttr.maxLevel)*100;
-        pBarLeftLabel = cardTAttr.level;
-        pBarRightLabel = (cardTAttr.maxLevel - cardTAttr.level);
-        pBarMinLabel = "";
-        pBarMaxLabel = cardTAttr.maxLevel;
-        break;
-      case "upgradeable":
-        content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " " + formatUpgradeCost(cardOwnAttr.level, card) + "</span></button><div class='progressWrapper'><div class='progressLeftLabel'><span>" + cardOwnAttr.level + "</span></div><div class='progressHolder'><div class='progressBar progressRedOrange'><span class='progressBarText'>" + cardOwnAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + " " + "</span></div></div><div class='progressRightLabel'><span>" + cardOwnAttr.maxLevel + "</span></div></div></li>";
-        pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
-        pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
-        pBarLeftLabel = cardOwnAttr.level;
-        pBarRightLabel = "";
-        pBarMinLabel = cardOwnAttr.level;
-        pBarMaxLabel = cardOwnAttr.maxLevel;
-        break;
+    if (cardOwnAttr.visible == false) {
+      console.log("CardAttr " + cardOwnAttr.id + " Invisible");
     }
-    if (targetLI.length<=0) {
-      cardList.append(content);
-    }
-    if (pBarTarget !== undefined) {
-      setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel, 0);
+    else {
+      let content = "";
+      let targetLI = cardList.find("#" + card.name);
+      let cardAttr = attrInfo.filter(attr => attr.id === card.attributeID)[0];
+      let cardTAttr = characterData.tempAttributes.filter(attr => attr.id === card.relevantTAttrID)[0];
+      let pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel;
+      //Below is not presently needed. May add tooltips or something in the future so leaving for now...
+      // let targetTAttrInfo = tAttrInfo.filter(attr => attr.id === card.relevantTAttrID)[0];
+      switch(card.type) {
+        case "multiclickGatherer": //read: progress bar that fills up to generate item
+          content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + "</span></button><div class='progressWrapper'><div class='progressLeftLabel hidden'><span>" + " " + "</span></div><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + cardTAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (cardTAttr.maxLevel - cardTAttr.level) + "</span></div></div><div class='progressRightLabel'><span>" + cardTAttr.maxLevel + "</span></div></div></li>";
+          pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+          pBarPercent = ((cardTAttr.maxLevel - (cardTAttr.maxLevel - cardTAttr.level))/cardTAttr.maxLevel)*100;
+          pBarLeftLabel = cardTAttr.level;
+          pBarRightLabel = (cardTAttr.maxLevel - cardTAttr.level);
+          pBarMinLabel = "";
+          pBarMaxLabel = cardTAttr.maxLevel;
+          break;
+        case "multiclickConverter": //read: progress bar that fills up to convert item to another item
+          content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " (" + formatButtonCost(cardOwnAttr.level, card.convertStructure) + " Once Full)</span></button><div class='progressWrapper'><div class='progressLeftLabel hidden'><span>" + " " + "</span></div><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + cardTAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (cardTAttr.maxLevel - cardTAttr.level) + "</span></div></div><div class='progressRightLabel'><span>" + cardTAttr.maxLevel + "</span></div></div></li>";
+          pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+          pBarPercent = ((cardTAttr.maxLevel - (cardTAttr.maxLevel - cardTAttr.level))/cardTAttr.maxLevel)*100;
+          pBarLeftLabel = cardTAttr.level;
+          pBarRightLabel = (cardTAttr.maxLevel - cardTAttr.level);
+          pBarMinLabel = "";
+          pBarMaxLabel = cardTAttr.maxLevel;
+          break;
+        case "upgradeable":
+          content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " (" + formatButtonCost(cardOwnAttr.level, card.costStructure) + ")</span></button><div class='progressWrapper'><div class='progressLeftLabel'><span>" + cardOwnAttr.level + "</span></div><div class='progressHolder'><div class='progressBar progressRedOrange'><span class='progressBarText'>" + cardOwnAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + " " + "</span></div></div><div class='progressRightLabel'><span>" + cardOwnAttr.maxLevel + "</span></div></div></li>";
+          pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+          pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
+          pBarLeftLabel = cardOwnAttr.level;
+          pBarRightLabel = "";
+          pBarMinLabel = cardOwnAttr.level;
+          pBarMaxLabel = cardOwnAttr.maxLevel;
+          break;
+        case "spooler":
+          //TEMP: copied converter
+          content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div><button class='entryButton collectButton' onclick=\"buttonUsed('" + card.type + "', '" + cardAttr.name + "')\"><span class='buttonText'>" + card.buttonText + " (" + formatButtonCost(cardOwnAttr.level, card.convertStructure) + " Once Full)</span></button><div class='progressWrapper'><div class='progressLeftLabel hidden'><span>" + " " + "</span></div><div class='progressHolder'><div class='progressBar progressBlue'><span class='progressBarText'>" + cardTAttr.level + "</span></div><div class='progressRemaining'><span class='progressRemainingText'>" + (cardTAttr.maxLevel - cardTAttr.level) + "</span></div></div><div class='progressRightLabel'><span>" + cardTAttr.maxLevel + "</span></div></div></li>";
+          pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+          pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
+          pBarLeftLabel = cardOwnAttr.level;
+          pBarRightLabel = "";
+          pBarMinLabel = cardOwnAttr.level;
+          pBarMaxLabel = cardOwnAttr.maxLevel;
+          break;
+        case "passive":
+          //TEMP: copied upgradeable
+          content="<li id='" + cardAttr.name + "'><div class='entryHeader'><strong>" + cardAttr.displayName + "</strong></div><div class='entryDescriptor'><span>" + cardAttr.description + "</span></div></li>";
+          pBarTarget = $(cardListSelector + " #" + cardAttr.name + " .progressWrapper");
+          pBarPercent = ((cardOwnAttr.maxLevel - (cardOwnAttr.maxLevel - cardOwnAttr.level))/cardOwnAttr.maxLevel)*100;
+          pBarLeftLabel = cardOwnAttr.level;
+          pBarRightLabel = "";
+          pBarMinLabel = cardOwnAttr.level;
+          pBarMaxLabel = cardOwnAttr.maxLevel;
+          break;
+      }
+      if (targetLI.length<=0) {
+        cardList.append(content);
+      }
+      if (pBarTarget !== undefined) {
+        setProgressBar(pBarTarget, pBarPercent, pBarLeftLabel, pBarRightLabel, pBarMinLabel, pBarMaxLabel, 0);
+      }
     }
   });
 }
@@ -266,7 +314,7 @@ function addSidebarLocation(topLevelLocationName, locationName, optionalTLIconNa
   let topLevelSearch = "#sidebar ul #" + camelize(topLevelLocationName + "TopLevelMenu");
   let topLevelA = $(topLevelSearch);
   if (topLevelA.length === 0) { //couldnt find the specified topLevelA by ID, so assuming need to add
-    let newTopLevel = "<li><a id='" + camelize(topLevelLocationName + "TopLevelMenu") + "' class='sidebarButton dropdown-toggle' href='#" + camelize(topLevelLocationName + "Submenu") + "' data-toggle='collapse' aria-expanded='false'><i class='fa " + optionalTLIconName + "'></i>" + topLevelLocationName + "</a><ul id='" + camelize(topLevelLocationName + "Submenu") + "' class='collapse list-unstyled'></ul></li>";
+    let newTopLevel = "<li><a id='" + camelize(topLevelLocationName + "TopLevelMenu") + "' class='sidebarButton dropdown-toggle' href='#" + camelize(topLevelLocationName + "Submenu") + "' data-toggle='collapse' aria-expanded='false'><i class='iconify' data-icon='" + optionalTLIconName + "'></i>" + topLevelLocationName + "</a><ul id='" + camelize(topLevelLocationName + "Submenu") + "' class='collapse list-unstyled'></ul></li>";
     $(newTopLevel).insertBefore("#sidebar ul .flow-bottom");
     topLevelA = $(topLevelSearch);
   }
@@ -275,8 +323,12 @@ function addSidebarLocation(topLevelLocationName, locationName, optionalTLIconNa
   $(topLevelUL).append(newLocationEntry);
 }
 
-addSidebarLocation("Home", "Garden", "fa-home");
-addSidebarLocation("Home", "Armchair");
+addSidebarLocation("Mine", "Shaft", "mdi:diamond-stone");
+addSidebarLocation("Mine", "Extractor");
+addSidebarLocation("Industry", "Refinery", "vaadin:factory");
+addSidebarLocation("Industry", "Smeltery");
+addSidebarLocation("Shipping", "Packing", "fa-solid:truck-loading");
+addSidebarLocation("Shipping", "Distribution Center")
 
 function camelize(str) {
   return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
